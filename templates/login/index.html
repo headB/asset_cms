@@ -14,7 +14,7 @@
 
 	<script type="text/javascript">
 		function changing(){
-			document.getElementById('checkpic').src="verifycode?"+Math.random();
+			document.getElementById('checkpic').src="verify_code?"+Math.random();
 		}
 	</script>
 
@@ -22,12 +22,13 @@
 
 <body>
 
-<form id="login" name="form1" method="post" action="checkLogin.php">
-    <h1>行政管理系统登录</h1>
+<form id="login" name="form1" method="post" action="check_login">
+    {% csrf_token %}
+    <h1>教学通用管理系统</h1>
     <fieldset id="inputs">
         <input id="username" name="username" type="text" placeholder="请输入用户名" autofocus required>
         <input id="password" name="password" type="password" placeholder="请输入密码" required >
-        <input id="yanzhenma" name="codeImage" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="verifycode" />
+        <input id="yanzhenma" name="codeImage" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="verify_code" />
 
     </fieldset>
     <fieldset id="actions">

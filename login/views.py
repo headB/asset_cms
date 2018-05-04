@@ -1,4 +1,5 @@
 from django.shortcuts import render,HttpResponse,redirect
+from django.http import JsonResponse
 #from django.http import request
 
 # Create your views here.
@@ -7,6 +8,9 @@ from django.shortcuts import render,HttpResponse,redirect
 from PIL import Image,ImageDraw,ImageFont,ImageFilter
 import random
 import math,string
+
+##导入model
+import login.models
 
 def index(request):
 
@@ -69,4 +73,14 @@ def verify_code(request):
 ##包括账号密码
 def check_login(request):
     
-    pass
+    username = request.POST.get('username')
+    info = login.models.Admin.objects.filter(username=username)
+
+    print(info)
+
+    if info:
+        message = "信息验证正确!"
+    else:
+        message = "信息验证不正确!"
+
+    return HttpResponse(message)
