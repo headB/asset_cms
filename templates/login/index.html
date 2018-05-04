@@ -1,17 +1,62 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>欢迎使用</title>
+
+<title>小码哥行政通用管理系统</title>
+
+{% load staticfiles %}
+<link rel='stylesheet' href="{% static "login/login.css"  %}">
+
+<style>
+
+</style>
+
+	<script type="text/javascript">
+		function changing(){
+			document.getElementById('checkpic').src="image.php?"+Math.random();
+		}
+	</script>
+
 </head>
+
 <body>
-    <center>
 
-        <h1>欢迎使用本系统,本系统是关于行政管理的信息管理系统</h1>
+<form id="login" name="form1" method="post" action="checkLogin.php">
+    <h1>Log In</h1>
+    <fieldset id="inputs">
+        <input id="username" name="username" type="text" placeholder="请输入用户名" autofocus required>
+        <input id="password" name="password" type="password" placeholder="请输入密码" required >
+        <input id="yanzhenma" name="codeImage" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="image.php" />
 
-    </center>
+    </fieldset>
+    <fieldset id="actions">
+        <input type="submit" id="submit" name="submit" value="登录" style="margin-right:2px"  >
+		<input name="button" id="submit" onclick="window.location.href='register.html'" type="button" value="注册" style="margin-right:2px" >
+		<input name="button" id="submit" onclick="window.location.href='resetfn.php'" type="button" value="忘记密码？">
+        <br>
+        <input name="button" id="submit" onclick="window.location.href='wifi.php'" type="button" value="注册WIFI账号" style="margin-right:2px" >
+        <input name="button" id="submit" onclick="window.location.href='wifi.php?m=WIFI_pwd_reset_send'" type="button" value="重置WIFI密码">
+
+
+    </fieldset>
+
+
+
+
+            <?php include 'ok.php'; ?>
+
+	
+    
+<br><br><br><br>
+    网管上班时间
+<br>
+    zhixuan:星期1到4，星期6<br>
+    wenjin:星期1到3，星期5,7<br>
+    上班时间仅供参考，请以实际为主!
+
+</form>
+
 
 </body>
 </html>
