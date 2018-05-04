@@ -14,7 +14,7 @@
 
 	<script type="text/javascript">
 		function changing(){
-			document.getElementById('checkpic').src="image.php?"+Math.random();
+			document.getElementById('checkpic').src="verifycode?"+Math.random();
 		}
 	</script>
 
@@ -23,11 +23,11 @@
 <body>
 
 <form id="login" name="form1" method="post" action="checkLogin.php">
-    <h1>Log In</h1>
+    <h1>行政管理系统登录</h1>
     <fieldset id="inputs">
         <input id="username" name="username" type="text" placeholder="请输入用户名" autofocus required>
         <input id="password" name="password" type="password" placeholder="请输入密码" required >
-        <input id="yanzhenma" name="codeImage" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="image.php" />
+        <input id="yanzhenma" name="codeImage" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="verifycode" />
 
     </fieldset>
     <fieldset id="actions">
@@ -35,27 +35,13 @@
 		<input name="button" id="submit" onclick="window.location.href='register.html'" type="button" value="注册" style="margin-right:2px" >
 		<input name="button" id="submit" onclick="window.location.href='resetfn.php'" type="button" value="忘记密码？">
         <br>
-        <input name="button" id="submit" onclick="window.location.href='wifi.php'" type="button" value="注册WIFI账号" style="margin-right:2px" >
-        <input name="button" id="submit" onclick="window.location.href='wifi.php?m=WIFI_pwd_reset_send'" type="button" value="重置WIFI密码">
-
 
     </fieldset>
 
-
-
-
-            <?php include 'ok.php'; ?>
-
-	
-    
-<br><br><br><br>
-    网管上班时间
-<br>
-    zhixuan:星期1到4，星期6<br>
-    wenjin:星期1到3，星期5,7<br>
-    上班时间仅供参考，请以实际为主!
-
+    <br><br><br>
+    <h2>powered by django2.0</h2>
 </form>
+
 
 
 </body>

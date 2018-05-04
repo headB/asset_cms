@@ -78,9 +78,9 @@ body
 
 /*--------------------*/
 
-h1
+ h1
 {
-    text-shadow: 0 1px 0 rgba(255, 255, 255, .7), 0px 2px 0 rgba(0, 0, 0, .5);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
     text-transform: uppercase;
     text-align: center;
     color: #666;
@@ -88,7 +88,7 @@ h1
     letter-spacing: 4px;
     font: normal 26px/1 Verdana, Helvetica;
     position: relative;
-}
+} 
 
 h1:after, h1:before
 {
@@ -135,7 +135,7 @@ fieldset
 
 #inputs input
 {
-    background: #f1f1f1 url(http://www.red-team-design.com/wp-content/uploads/2011/09/login-sprite.png) no-repeat;
+    
     padding: 15px 15px 15px 30px;
     margin: 0 0 10px 0;
     width: 353px; /* 353 + 2 + 45 = 400 */
