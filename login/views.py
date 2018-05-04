@@ -73,14 +73,22 @@ def verify_code(request):
 ##包括账号密码
 def check_login(request):
     
-    username = request.POST.get('username')
-    info = login.models.Admin.objects.filter(username=username)
+    
 
-    print(info)
+    p_username = request.POST.get('username')
+    p_passwd = request.POST.get('password')
+    p_verify_code = request.POST.get('codeImage')
 
-    if info:
-        message = "信息验证正确!"
+    context = {"title":'登陆',"username":p_username,"password":p_passwd,'verify_code':p_verify_code}
+
+    user_info = login.models.Admin.objects.filter(username=p_username)
+    
+    print(request.session)
+    
+    if user_info:
+        if p_passwd == user_info.password:
+            pass
     else:
-        message = "信息验证不正确!"
+        return HttpResponse("错误,无法登陆,账户或者密码或者验证码出错!",context)
 
-    return HttpResponse(message)
+    
