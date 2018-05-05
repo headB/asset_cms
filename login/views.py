@@ -38,7 +38,7 @@ def verify_code(request):
         draw.point(xy,fill=fill)
 
     #定义验证码的备选值
-    str1 = 'QWERTYUIOPASDFGHJKLZXCVBNM1234567890'
+    str1 = 'QWERTYUIOPAShjluiotvcvbmzcvsfcrDFGHJasdKLZXCVBNM1234567890'
     #随机选取4个值作为验证码
     rand_str = ''
     for i in range(0,4):
@@ -76,27 +76,31 @@ def check_login(request):
     
     p_username = request.POST.get('username')
     p_passwd = request.POST.get('password')
-    p_verify_code = request.POST.get('codeImage')
-
-    verify_code = request.session['verifycode']
+    p_verify_code = request.POST.get('codeImage').lower()
+    #将传过来的post里面的验证码全部小写化
+    verify_code = request.session['verifycode'].lower()
 
     context = {"title":'登陆',"username":p_username,"password":p_passwd,'verify_code':p_verify_code}
 
+    #将传过来的post里面的验证码全部小写化
     context['session_verify_code'] = verify_code
 
-    md5_passwd = hashlib.md5()
-
-    context['md5_passwd'] = "xx"
+    md5_passwd = hashlib.md5((p_passwd+"wolfcodeDTE").encode())
+    
+    #加盐处理
+    #context['md5_passwd'] = md5_passwd.hexdigest()
 
     user_info = login.models.Admin.objects.filter(username=p_username)
     
-    if user_info:
-        if p_passwd == user_info.password:
-            pass
+    if verify_code == p_verify_code:
+        if user_info:
+            if p_passwd == user_info[0].password:
+                return HttpResponse("登录成功！")
+            else:
+                return HttpResponse("密码错误！")
+        else:
+            return HttpResponse("用户不存在！")
     else:
-        CoreInfo = str(context)
-        return HttpResponse("""错误,无法登陆,账户或者密码或者验证码出错!<br>this is the CoreInfo%s
-        """%(CoreInfo)
-        )
+        return HttpResponse("验证码错误")
 
     
