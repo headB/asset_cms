@@ -1,5 +1,6 @@
 from django.shortcuts import render,HttpResponse,redirect
 from django.http import JsonResponse
+import hashlib
 #from django.http import request
 
 # Create your views here.
@@ -77,16 +78,25 @@ def check_login(request):
     p_passwd = request.POST.get('password')
     p_verify_code = request.POST.get('codeImage')
 
+    verify_code = request.session['verifycode']
+
     context = {"title":'登陆',"username":p_username,"password":p_passwd,'verify_code':p_verify_code}
 
+    context['session_verify_code'] = verify_code
+
+    md5_passwd = hashlib.md5()
+
+    context['md5_passwd'] = "xx"
+
     user_info = login.models.Admin.objects.filter(username=p_username)
-    
-    print(request.session)
     
     if user_info:
         if p_passwd == user_info.password:
             pass
     else:
-        return HttpResponse("错误,无法登陆,账户或者密码或者验证码出错!")
+        CoreInfo = str(context)
+        return HttpResponse("""错误,无法登陆,账户或者密码或者验证码出错!<br>this is the CoreInfo%s
+        """%(CoreInfo)
+        )
 
     
