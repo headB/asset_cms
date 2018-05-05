@@ -73,8 +73,6 @@ def verify_code(request):
 ##包括账号密码
 def check_login(request):
     
-    
-
     p_username = request.POST.get('username')
     p_passwd = request.POST.get('password')
     p_verify_code = request.POST.get('codeImage')
@@ -89,6 +87,6 @@ def check_login(request):
         if p_passwd == user_info.password:
             pass
     else:
-        return HttpResponse("错误,无法登陆,账户或者密码或者验证码出错!",context)
+        return HttpResponse("错误,无法登陆,账户或者密码或者验证码出错!")
 
     
