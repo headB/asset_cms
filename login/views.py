@@ -25,8 +25,8 @@ def index_show(request):
 #定义验证码
 def verify_code(request):
     bgcolor = (random.randrange(20,100),random.randrange(20,100),100)
-    width = 100
-    height = 25
+    width = 150
+    height = 40
     #创建画面对象
     im = Image.new('RGB',(width,height),bgcolor)
     #创建画笔对象
@@ -45,12 +45,12 @@ def verify_code(request):
         rand_str += str1[random.randrange(0,len(str1))]
 
     #构造字体对象,centos的字体位置
-    font = ImageFont.truetype('static/msyh.ttc',20)
+    font = ImageFont.truetype('static/msyh.ttc',25)
     #构造字体颜色
     fontcolor = (255,random.randrange(0,255),random.randrange(0,255))
     #绘制4个字
     draw.text((5,1),rand_str[0],font=font,fill=fontcolor)
-    draw.text((25,2),rand_str[1],font=font,fill=fontcolor)
+    draw.text((35,2),rand_str[1],font=font,fill=fontcolor)
     draw.text((50,3),rand_str[2],font=font,fill=fontcolor)
     draw.text((75,1),rand_str[3],font=font,fill=fontcolor)
 
@@ -118,6 +118,17 @@ def getTime():
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return time
 
-    #获取当前ip
-def get_client_ip():
-    import socket
+#处理注册页面
+def register(request):
+
+
+
+    return render(request,'login/register.html')
+
+##ajax,返回该用户名是否被注册
+def ajax_handle(request):
+
+    if request.GET.get('username'):
+        return HttpResponse("恭喜发财!利是逗来!")
+
+    return HttpResponse("不好意思,这里什么都没有!")
