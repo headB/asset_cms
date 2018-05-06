@@ -92,10 +92,19 @@ def check_login(request):
 
     user_info = login.models.Admin.objects.filter(username=p_username)
     
+    #验证过程
     if verify_code == p_verify_code:
         if user_info:
             if p_passwd == user_info[0].password:
-                return HttpResponse("登录成功！")
+                
+                login_admin = login.models.Admin.objects.get(username=p_username)
+                login_admin.last_login_time = getTime()
+                login_admin.last_login_ip = request.META['REMOTE_ADDR']
+                str_info = str(login_admin)
+                #print(dir(str_info))
+                login_admin.save()
+
+                return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
             else:
                 return HttpResponse("密码错误！")
         else:
@@ -103,4 +112,12 @@ def check_login(request):
     else:
         return HttpResponse("验证码错误")
 
-    
+    ##获取当前时间
+def getTime():
+    from datetime import datetime
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return time
+
+    #获取当前ip
+def get_client_ip():
+    import socket

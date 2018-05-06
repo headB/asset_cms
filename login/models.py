@@ -9,5 +9,5 @@ class Admin(models.Model):
     password = models.CharField(max_length=200)
     department = models.IntegerField(default=1)
     realname = models.CharField(max_length=50)
-    last_login_time = models.CharField(max_length=50,null=True)
+    last_login_time = models.DateTimeField(null=True)
     last_login_ip = models.CharField(max_length=50,null=True)
