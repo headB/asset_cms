@@ -57,7 +57,7 @@
         }
 
         function changing(){
-            document.getElementById('checkpic').src="http://127.0.0.1/login/verify_code?id="+Math.round(Math.random()*100);
+            document.getElementById('checkpic').src="/login/verify_code/?id="+Math.round(Math.random()*100);
         }
 
 
@@ -79,7 +79,7 @@
                 </div>
 
 
-                <form id="defaultForm" method="post" class="form-horizontal" action=""
+                <form id="defaultForm" method="post" class="form-horizontal" action="register_handle"
                       data-bv-message="This value is not valid"
                       data-bv-feedbackicons-valid="glyphicon glyphicon-ok"
                       data-bv-feedbackicons-invalid="glyphicon glyphicon-remove"
@@ -90,7 +90,7 @@
                         <label class="col-lg-3 control-label">想设置登录名</label>
                         <div class="col-lg-5">
                             <input type="text" value="" class="form-control" name="username"
-                                   data-bv-remote="true" data-bv-remote-url="" data-bv-remote-message="用户名已经注册过啦！！"
+                                   data-bv-remote="true" data-bv-remote-url="ajax" data-bv-remote-message="用户名已经注册过啦！！"
                                    data-bv-message="两个字符以上，可以是中文、英文+下划线"
                                    required data-bv-notempty-message="用户名不能为空"
                                    pattern="^[\u4e00-\u9fa5A-Za-z0-9_]{2,20}$"
@@ -148,7 +148,7 @@
                         <div class="col-lg-5">
                             
                             <input value=""
-                                   class="form-control" name="registerCode"  placeholder="输入N位注册码,点击右侧获取注册码"
+                                   class="form-control" name="register_code"  placeholder="输入N位注册码,点击右侧获取注册码"
                                    pattern="^[A-Za-z0-9]{4,6}$"
                                    data-bv-message="请输入N位注册码"
                                    data-bv-emailaddress-message="请输入N位注册码"
@@ -162,13 +162,13 @@
                         <label class="col-lg-3 control-label">验证码</label>
                         <img style="padding-top:12px" id="checkpic" onclick="changing();" src='../verify_code/' />
                         <div class="col-lg-5">
-                            <input class="form-control" name="value"  placeholder="输入右侧显示的4位验证码，点图刷新"
+                            <input class="form-control" name="verify_code"  placeholder="输入右侧显示的4位验证码，点图刷新"
                                    pattern="^[A-Za-z0-9]{4}$"
                                    data-bv-message="请输入4位验证码"
                                    data-bv-emailaddress-message="输入4位验证码"
                                    required data-bv-notempty-message="输入4位验证码"
 
-                                   data-bv-remote="true" data-bv-remote-url=""
+                                   data-bv-remote="true" data-bv-remote-url="ajax"
                                    data-bv-remote-message="验证码错误!"
 
                             />

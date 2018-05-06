@@ -6,4 +6,6 @@ urlpatterns = [
     path("check_login/",views.check_login),
     path("register/",views.register),
     path("register/ajax",views.ajax_handle),
+    path("register/register_handle",views.register_handle),
+
 ]

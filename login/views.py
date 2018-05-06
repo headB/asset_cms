@@ -118,17 +118,62 @@ def getTime():
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return time
 
-#处理注册页面
+##展示注册页面
 def register(request):
-
-
 
     return render(request,'login/register.html')
 
+##处理注册信息
+def register_handle(request):
+
+    p_username = request.POST['username']
+    p_password = request.POST['password']
+    p_email = request.POST['email']
+    p_verify_code = request.POST['verify_code'].lower()
+
+    if p_verify_code == request.session['verifycode'].lower():
+        if p_username:
+            if p_password:
+                if p_email:
+                    newUser = login.models.Admin()
+                    newUser.username = p_username
+                    newUser.password = p_password
+                    newUser.email = p_email
+                    newUser.save()
+                    try:
+                        newUser.save()
+                    except Exception  as e:
+                        return JsonResponse({"401":"数据保存失败"})
+                    else:
+                        return JsonResponse({"202":"数据保存成功"})
+                else:
+                    return JsonResponse({"403":"没有邮件信息"})
+            else:
+                return JsonResponse({"405":"没有设置密码"})
+        else:
+            return JsonResponse({"406":'没有设置用户名'})
+    else:
+        return JsonResponse({"407":"验证码错误！"})
+
+
+
+    
+
 ##ajax,返回该用户名是否被注册
 def ajax_handle(request):
+    username = request.GET.get('username')
+    if username:
+        if login.models.Admin.objects.filter(username=username):
+            return JsonResponse({"valid":False})
+        else:
+            return JsonResponse({"valid":True})
 
-    if request.GET.get('username'):
-        return HttpResponse("恭喜发财!利是逗来!")
+    verify_code = request.GET['verify_code']
+    
+    if verify_code.lower() == request.session['verifycode'].lower():
+        return JsonResponse({"valid":True})
+    else:
+        return JsonResponse({"valid":False})
+
 
     return HttpResponse("不好意思,这里什么都没有!")
