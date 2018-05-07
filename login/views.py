@@ -13,21 +13,11 @@ import math,string
 ##导入model
 import login.models
 
+
+##登陆成功的第一个页面
 def index(request):
     #print(request.session.has_key('cctv'))
     #print(request.session.get("verifycode"))
-    
-
-
-    return redirect('/estimate/index')
-
-def login_index(request):
-
-    return render(request,'login/index.html')
-
-##登陆成功的第一个页面
-def index_show(request):
-
     
     if not request.session.get('uid'):
         return redirect('/estimate/login/')
@@ -37,8 +27,15 @@ def index_show(request):
     info['uid'] = request.session.get('uid')
     info['uname'] = request.session.get('uname')
     return HttpResponse("你的信息如下,数据集信息%s"%str(info))
-    #return render(request,'login/index_show.html')
-    #return redirect("login/")
+        
+##登录页面
+def login_index(request):
+
+    return render(request,'login/index.html')
+
+def forward_to_estimate(request):
+
+    return redirect('/estimate/index')
 
 #定义验证码
 def verify_code(request):
@@ -204,7 +201,7 @@ def exit(request):
     del request.session['uid']
     del request.session['uname']
 
-    return JsonResponse('{"message":"退出成功!"}')
+    return JsonResponse({"message":"退出成功!"})
 
 
 
