@@ -14,13 +14,31 @@ import math,string
 import login.models
 
 def index(request):
+    #print(request.session.has_key('cctv'))
+    #print(request.session.get("verifycode"))
+    
+
+
+    return redirect('/estimate/index')
+
+def login_index(request):
 
     return render(request,'login/index.html')
 
+##登陆成功的第一个页面
 def index_show(request):
 
+    
+    if not request.session.get('uid'):
+        return redirect('/estimate/login/')
+
+
+    info = {}
+    info['uid'] = request.session.get('uid')
+    info['uname'] = request.session.get('uname')
+    return HttpResponse("你的信息如下,数据集信息%s"%str(info))
     #return render(request,'login/index_show.html')
-    return redirect("login/")
+    #return redirect("login/")
 
 #定义验证码
 def verify_code(request):
@@ -95,8 +113,8 @@ def check_login(request):
     #验证过程
     if verify_code == p_verify_code:
         if user_info:
+            p_passwd = hashlib.md5(p_passwd.encode()).hexdigest()
             if p_passwd == user_info[0].password:
-                
                 login_admin = login.models.Admin.objects.get(username=p_username)
                 login_admin.last_login_time = getTime()
                 login_admin.last_login_ip = request.META['REMOTE_ADDR']
@@ -104,7 +122,12 @@ def check_login(request):
                 #print(dir(str_info))
                 login_admin.save()
 
-                return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
+                ##设置session值表示成功登陆过!
+                request.session['uid'] = user_info[0].id
+                request.session['uname'] = user_info[0].username
+
+                #return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
+                return redirect('/index/')
             else:
                 return HttpResponse("密码错误！")
         else:
@@ -113,6 +136,7 @@ def check_login(request):
         return HttpResponse("验证码错误")
 
     ##获取当前时间
+
 def getTime():
     from datetime import datetime
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -125,7 +149,6 @@ def register(request):
 
 ##处理注册信息
 def register_handle(request):
-
     p_username = request.POST['username']
     p_password = request.POST['password']
     p_email = request.POST['email']
@@ -134,6 +157,7 @@ def register_handle(request):
     if p_verify_code == request.session['verifycode'].lower():
         if p_username:
             if p_password:
+                p_password = hashlib.md5(p_password.encode()).hexdigest()
                 if p_email:
                     newUser = login.models.Admin()
                     newUser.username = p_username
@@ -156,9 +180,6 @@ def register_handle(request):
         return JsonResponse({"407":"验证码错误！"})
 
 
-
-    
-
 ##ajax,返回该用户名是否被注册
 def ajax_handle(request):
     username = request.GET.get('username')
@@ -177,3 +198,23 @@ def ajax_handle(request):
 
 
     return HttpResponse("不好意思,这里什么都没有!")
+
+##退出登录
+def exit(request):
+    del request.session['uid']
+    del request.session['uname']
+
+    return JsonResponse('{"message":"退出成功!"}')
+
+
+
+
+
+
+
+
+
+
+
+
+

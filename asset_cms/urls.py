@@ -19,6 +19,6 @@ from login import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/',include('login.urls')),
+    path('estimate/',include('login.urls')),
     path('',views.index_show),
 ]
