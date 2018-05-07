@@ -100,7 +100,7 @@ def check_login(request):
     #将传过来的post里面的验证码全部小写化
     context['session_verify_code'] = verify_code
 
-    md5_passwd = hashlib.md5((p_passwd+"wolfcodeDTE").encode())
+    #md5_passwd = hashlib.md5((p_passwd+"wolfcodeDTE").encode())
     
     #加盐处理
     #context['md5_passwd'] = md5_passwd.hexdigest()
@@ -124,7 +124,7 @@ def check_login(request):
                 request.session['uname'] = user_info[0].username
 
                 #return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
-                return redirect('/index/')
+                return redirect('../')
             else:
                 return HttpResponse("密码错误！")
         else:
