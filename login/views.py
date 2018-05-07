@@ -122,6 +122,7 @@ def check_login(request):
                 ##设置session值表示成功登陆过!
                 request.session['uid'] = user_info[0].id
                 request.session['uname'] = user_info[0].username
+                request.session.set_expiry(60*60*12)
 
                 #return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
                 return redirect('../')
