@@ -5,6 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ title.title }}</title>
+
+    {% load staticfiles %}
+    <link href='{% static "estimate/common.css" %}'>
+
+    <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+	<script src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
+	<script src="http://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+
+	<script language="javascript" type="text/javascript">
+
+		function estimate_submit(){
+			$("type='submit'").click(function(){$()})
+		}
+
+		function getArea(id,p,query){
+			//初始化ajax
+			var xhr = new XMLHttpRequest();
+			var url = "ajax_estimate_type.php?"+query+"="+id+"&r="+Math.random()+"&xmg520it="+"Lizhixuan123!";
+			var sel=document.getElementById(p);
+			//var assetTable = document.getElementById('assetDetail');
+			//assetTable.innerHTML='<tr><td>hello word</td></tr>';
+			//打开请求
+			xhr.open("get",url,true);
+			//发送数据
+			xhr.send(null);
+
+			//等待响应
+			xhr.onreadystatechange = function (){
+
+				if(xhr.readyState == 4){
+					var arr1=xhr.responseText.split(";");
+
+					//清空下拉菜单
+					sel.length=0;
+					arr1.length = arr1.length-1;
+					for(var i=0;i<arr1.length;i++){
+						if(i==0){
+							var xx = new Option('--请选择--','');
+							sel.add(xx,null);
+						}
+						var arr2=arr1[i].split(":");
+
+						//产生一个option对象
+						//alert(arr2[0]);
+						var opt=new Option(arr2[1],arr2[0]);
+						//添加到当前列表当中
+						sel.add(opt,null);
+
+					}
+				}
+			};
+
+		}
+
+
+	</script>
+
 </head>
 <body>
     <center>

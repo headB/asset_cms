@@ -5,4 +5,70 @@
 <hr>
 <h2>我是hello world!</h2>
 
+<?php
+if(!isset($title))
+
+{echo "<center><p id='123'>--title 未被定义，所以输出默认标题-- </p></center>";}
+
+else
+{ echo "<center><p id='123'>$title </p></center>";} ?>
+<center>
+<div class="navbar navbar-default navbar-static-top" style="width:100%;">
+	<nav  style="width: 1230px;margin:0 auto" role="navigation" >
+		<div class="navbar-header">
+			<a class="navbar-brand"  href="index.php">欢迎---<?php echo $_SESSION['xz_username'];?>---登陆</a>
+		</div>
+		<div>
+			<ul class="nav navbar-nav">
+				<li ><a href="prepare_setting.php">点击设置评价</a></li>
+				<li class="dropdown">
+					<a href="manageEstimating.php" class="dropdown-toggle" >
+						管理当前评价
+						<b class="caret"></b>
+					</a>
+				</li>
+				<li class="dropdown">
+					<a href="managerSql.php" class="dropdown-toggle" >
+						评分数据导出
+						<b class="caret"></b>
+					</a>
+
+				</li>
+
+				<li class="dropdown">
+					<a href="study.php" class="dropdown-toggle" >
+						学习情况调查设置
+						<b class="caret"></b>
+					</a>
+				</li>
+
+				<li class="dropdown">
+					<a href="renew.php" class="dropdown-toggle" >
+						重置程序
+						<b class="caret"></b>
+					</a>
+				</li>
+
+				<li class="dropdown">
+					<a href="network.php?m=index" class="dropdown-toggle" >
+						网络管理
+						<b class="caret"></b>
+					</a>
+				</li>
+
+				<li class="dropdown">
+					<a href="crawler.php" class="dropdown-toggle" >
+						crawler
+						<b class="caret"></b>
+					</a>
+				</li>
+
+
+				<li ><a href="exit.php">退出</a></li>
+			</ul>
+		</div>
+	</nav>
+
+</div>
+
 {%endblock body %}
