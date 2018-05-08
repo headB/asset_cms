@@ -198,6 +198,55 @@ def ajax_handle(request):
 
     return HttpResponse("不好意思,这里什么都没有!")
 
+##评价需要用到的相关信息ajax
+def ajax_estimate(request):
+
+    ##评价对象类型
+    block = request.GET.get('block')
+    if block:
+        block = is_number(block)
+        ##首先判断是不是数字
+        if block:
+            classRoom = login.models.ClassRoom.objects.filter(block_number=block)
+            classInfo = ''
+            if classRoom:
+                for i in classRoom:
+                    classInfo += str(i.id)+":"+i.class_number+";"
+                return HttpResponse(classInfo)
+            else:
+                return HttpResponse()
+        else:
+            return HttpResponse()
+    
+
+    type = request.GET.get("type")
+    print("cc")
+    if type:
+        type = is_number(type)
+        if type:
+            teacherType = login.models.PortType.objects.filter(tid=type)
+            if teacherType:
+                infos = ''
+                for i in teacherType:
+                    infos += str(i.id)+":"+i.type+";"
+                return HttpResponse(infos)
+            else:
+                return HttpResponse()
+        else:
+            return HttpResponse()
+
+                
+    
+    ##课室查询
+    # if request.GET.get(''):
+    #     pass
+    
+    #学科查询
+    #if request.GET.get(''):
+    #    pass
+
+    
+
 ##退出登录
 def exit(request):
     del request.session['uid']
@@ -205,7 +254,14 @@ def exit(request):
 
     return JsonResponse({"message":"退出成功!"})
 
-
+#判断是否为数字
+def is_number(number):
+    try:
+        number1 = int(number)
+    except Exception as e:
+        return False
+    
+    return number
 
 
 

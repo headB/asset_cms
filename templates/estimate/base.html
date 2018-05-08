@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ title.title }}</title>
+    <title>{{ title }}</title>
 
     {% load staticfiles %}
     <link href='{% static "estimate/common.css" %}'>
@@ -22,7 +22,7 @@
 		function getArea(id,p,query){
 			//初始化ajax
 			var xhr = new XMLHttpRequest();
-			var url = "ajax_estimate_type.php?"+query+"="+id+"&r="+Math.random()+"&xmg520it="+"Lizhixuan123!";
+			var url = "ajax_estimate/?"+query+"="+id+"&r="+Math.random()+"&xmg520it="+"Lizhixuan123!";
 			var sel=document.getElementById(p);
 			//var assetTable = document.getElementById('assetDetail');
 			//assetTable.innerHTML='<tr><td>hello word</td></tr>';
@@ -65,11 +65,13 @@
 </head>
 <body>
     <center>
-        <h1>我是大表哥</h1>
+		<h3>小码哥教学通用网络管理系统</h3>
+		<hr>
         {% block body %}
 
         {%endblock body %}
-
+<br><br>
+<h2>powered by python,django</h2>
     </center>
 </body>
 </html>

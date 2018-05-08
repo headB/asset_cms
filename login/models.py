@@ -12,3 +12,26 @@ class Admin(models.Model):
     realname = models.CharField(max_length=50)
     last_login_time = models.DateTimeField(null=True)
     last_login_ip = models.CharField(max_length=50,null=True)
+
+#课室的信息
+class ClassRoom(models.Model):
+    class_number = models.IntegerField()
+    block_number = models.IntegerField()
+    ip_addr = models.CharField(max_length=80)
+    ACL = models.CharField(max_length=20)
+
+##评价对象的分类
+class PortType(models.Model):
+    tid = models.IntegerField()
+    type = models.CharField(max_length=50)
+    port = models.IntegerField(null=True)
+    rname = models.CharField(max_length=50,null=True)
+
+##学科对象的分类
+class SubjectDetail(models.Model):
+    tid = models.IntegerField()
+    subject_name = models.CharField(max_length=50)
+    subject_teacher_name = models.CharField(max_length=50,null=True)
+    description = models.CharField(max_length=50)
+
+

@@ -10,5 +10,6 @@ urlpatterns = [
     path("register/register_handle",views.register_handle),
     path("index/",views.index),
     path("exit/",views.exit),
+    path("index/ajax_estimate/",views.ajax_estimate),
 
 ]

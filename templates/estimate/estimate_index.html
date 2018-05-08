@@ -2,33 +2,22 @@
 
 {% block body %}
 
-<hr>
-<h2>我是hello world!</h2>
-
-<?php
-if(!isset($title))
-
-{echo "<center><p id='123'>--title 未被定义，所以输出默认标题-- </p></center>";}
-
-else
-{ echo "<center><p id='123'>$title </p></center>";} ?>
-<center>
 <div class="navbar navbar-default navbar-static-top" style="width:100%;">
 	<nav  style="width: 1230px;margin:0 auto" role="navigation" >
 		<div class="navbar-header">
-			<a class="navbar-brand"  href="index.php">欢迎---<?php echo $_SESSION['xz_username'];?>---登陆</a>
+			<a class="navbar-brand"  href="/">欢迎---{{uname}}---登陆</a>
 		</div>
 		<div>
 			<ul class="nav navbar-nav">
-				<li ><a href="prepare_setting.php">点击设置评价</a></li>
+				<li ><a href="prepare_setting">点击设置评价</a></li>
 				<li class="dropdown">
-					<a href="manageEstimating.php" class="dropdown-toggle" >
+					<a href="manageEstimating" class="dropdown-toggle" >
 						管理当前评价
 						<b class="caret"></b>
 					</a>
 				</li>
 				<li class="dropdown">
-					<a href="managerSql.php" class="dropdown-toggle" >
+					<a href="managerSql" class="dropdown-toggle" >
 						评分数据导出
 						<b class="caret"></b>
 					</a>
@@ -36,39 +25,142 @@ else
 				</li>
 
 				<li class="dropdown">
-					<a href="study.php" class="dropdown-toggle" >
+					<a href="study" class="dropdown-toggle" >
 						学习情况调查设置
 						<b class="caret"></b>
 					</a>
 				</li>
 
-				<li class="dropdown">
-					<a href="renew.php" class="dropdown-toggle" >
-						重置程序
-						<b class="caret"></b>
-					</a>
-				</li>
 
 				<li class="dropdown">
-					<a href="network.php?m=index" class="dropdown-toggle" >
+					<a href="network" class="dropdown-toggle" >
 						网络管理
 						<b class="caret"></b>
 					</a>
 				</li>
 
-				<li class="dropdown">
-					<a href="crawler.php" class="dropdown-toggle" >
-						crawler
-						<b class="caret"></b>
-					</a>
-				</li>
 
-
-				<li ><a href="exit.php">退出</a></li>
+				<li ><a href="../exit">退出</a></li>
 			</ul>
 		</div>
 	</nav>
 
 </div>
+
+<script language="JavaScript" type="text/javascript">
+
+
+    var InterValObj; //timer变量，控制时间
+    var count = 12; //间隔函数，1秒执行
+    var curCount;//当前剩余秒数
+    var i = 1;
+
+    function sendMessage() {
+
+        var x=document.getElementById("loading");
+        curCount = count;
+        InterValObj = window.setInterval(SetRemainTime, 800); //启动计时器，1秒执行一次
+
+    }
+
+
+    //timer处理函数
+    function SetRemainTime() {
+        if (curCount == 0) {
+            window.clearInterval(InterValObj);//停止计时器
+            i = 0;
+        }
+        else {
+            var i1 = i*10;
+            i++;
+            curCount--;
+            $("#loading").css("width",i1+"%");
+        }
+    }
+
+    $(document).ready(function(){
+        //$('#bn100').click(function(){ $('#bn200').attr(disabled='disabled');});
+        $("[type='submit']").click(function(){ $("[type='submit']").hide();sendMessage();
+        });
+    });
+</script>
+
+
+<p>大家好，当前站点是广州-大地商务港</p><p style="color:royalblue;font-size:30px;">注意，这里有一个重要消息，新增JAVA小码哥讲师、辅导员评价!!请选择对应的评价！</p>
+<br>
+<form action="forwarder.php" method="post">
+	<table class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1">
+		<tbody>
+			<tr>
+				<td>评价所在区域</td>
+				<td>班级所在课室</td>
+				<td>评价类型</td>
+				<td>评价类型细分类</td>
+			</tr>
+			<tr>
+				<td>
+					<select name="block" onchange=" getArea(this.value,'place','block') ">
+   <option value="nodata">--请选择--</option>		
+   <option value="5">大地4楼</option>		
+   <option value="7">大地5楼</option>		
+   <option value="9">大地6楼</option>		
+   <option value="11">大地7楼</option>
+					</select>
+				</td>
+				<td>
+					<select name="place" id="place">
+				</select>
+				</td>
+				<td>
+					<select name="type" style=" id=" type'="" onchange=" getArea(this.value,'typeDetail','type') " '="">
+   					<option value="nodata">--请选择--</option>		
+					   <option value="1">讲师</option>		
+					   <option value="2">班主任</option>		
+					   <option value="3">辅导员</option>		
+					   <option value="9">学习反馈</option>
+					</select>
+				</td>
+				<td>
+					<select name="typeDetail" id="typeDetail">
+					</select>
+				</td></tr>
+				<tr>
+					<td>学科归属</td>
+					<td>被评价的老师名字</td>
+					<td>需要被评价的班级</td>
+					<td>该班级的参考人数</td>
+				</tr><tr>
+					<td><select name="subject">
+					   <option value="nodata">--请选择--</option>		
+					   <option value="1">iOS</option>		
+					   <option value="2">android</option>		
+					   <option value="5">UI</option>		
+					   <option value="4">C++</option>		
+					   <option value="3">java</option>		
+					   <option value="6">HTML5</option>
+						</select>
+					</td>
+					<td>	
+						<input type="text" name="user_name" placeholder="请输入2-4个中文名字">
+					</td>
+					<td>	
+						<input type="text" name="password" placeholder="请输入班级名字">
+					</td>
+					<td>	
+						<input type="number" name="total" placeholder="请输入参考人数">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<br>
+		<input type="submit" value="点击提交" class="btn btn-success" onclick="return confirm('确定提交评价申请?,提交后需要大概5-8秒钟时间开启评价')">   
+	</form>
+	<br>
+	<br>
+<div class="progress" style="width: 50%;height:80px">
+   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" id="loading" style="width: 0;">
+   </div>
+   </div>
+
 
 {%endblock body %}
