@@ -26,7 +26,8 @@ def index(request):
     info = {}
     info['uid'] = request.session.get('uid')
     info['uname'] = request.session.get('uname')
-    return HttpResponse("你的信息如下,数据集信息%s"%str(info))
+    info['title'] = "评价首页测试"
+    return render(request,'estimate/estimate_index.html',info)
         
 ##登录页面
 def login_index(request):
