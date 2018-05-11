@@ -1,6 +1,7 @@
 from django.shortcuts import render,HttpResponse,redirect
 from django.http import JsonResponse
 import hashlib
+
 #from django.http import request
 
 # Create your views here.
@@ -285,6 +286,12 @@ def estimate_process(request):
     
     
     return JsonResponse({'content':infoStr})
+    
+def network_test(request):
+    import psutil
+    x1 = psutil.pids()
+    print(x1)
+    return JsonResponse({'content':'CC'})
 
 
 
