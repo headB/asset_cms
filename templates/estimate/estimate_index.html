@@ -154,6 +154,7 @@
 		</table>
 		<br>
 		<input type="submit" value="点击提交" class="btn btn-success" onclick="return confirm('确定提交评价申请?,提交后需要大概5-8秒钟时间开启评价')">   
+		{% csrf_token %}
 	</form>
 	<br>
 	<br>

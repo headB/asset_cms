@@ -263,8 +263,28 @@ def is_number(number):
     
     return number
 
+##处理提交过来的数据,并且校验完成之后,就使用多线程或者多进程来处理行为
+def estimate_process(request):
 
+    infoStr = str(request.POST)
+    #具体教学区
+    block = request.POST.get('block')
+    #具体课室
+    place = request.POST.get('place')
+    #评价种类
+    type = request.POST.get('type')
+    #详细评价
+    typeDetail = request.POST.get('typeDetail')
+    #被评价人的名字
+    user_name = request.POST.get('user_name')
+    #评价的班级
+    password = request.POST.get('password')
+    ##具体学科
+    subject = request.POST.get('subject')
 
+    
+    
+    return JsonResponse({'content':infoStr})
 
 
 

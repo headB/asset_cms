@@ -11,5 +11,6 @@ urlpatterns = [
     path("index/",views.index),
     path("exit/",views.exit),
     path("index/ajax_estimate/",views.ajax_estimate),
+    path("index/forwarder.php",views.estimate_process),
 
 ]

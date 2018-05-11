@@ -15,7 +15,7 @@ class Admin(models.Model):
 
 #课室的信息
 class ClassRoom(models.Model):
-    class_number = models.IntegerField()
+    class_number = models.CharField(max_length=10)
     block_number = models.IntegerField()
     ip_addr = models.CharField(max_length=80)
     ACL = models.CharField(max_length=20)
