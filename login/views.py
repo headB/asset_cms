@@ -283,18 +283,58 @@ def estimate_process(request):
     ##具体学科
     subject = request.POST.get('subject')
 
+    estimatingInfo = get_running_node()
+
+    print(estimatingInfo)
     
+    return JsonResponse({'content':infoStr,'estimateInfo':estimatingInfo})
     
-    return JsonResponse({'content':infoStr})
-    
+
+
 def network_test(request):
-    import psutil
-    x1 = psutil.pids()
-    print(x1)
+    import os
+    import re
+
+    x1 = os.popen("netstat -ntlp|grep -E '0.0.0.0:80[6-9][0-9]'").read()
+    x2 = x1.split("\n")
+    validInfo = [ x  for x in x2 if x ]
+    print(validInfo)
+    program = []
+    if validInfo:
+        for x in validInfo:
+            info = {}
+            port = re.search("0.0.0.0:80\d\d",x)[0].split(":")[1]
+            info['port'] = port
+            info['pid'] = re.search("\d+/",x)[0].split("/")[0]
+            program.append(info)
+    print(program)
+
     return JsonResponse({'content':'CC'})
 
 
+#检测目前有哪些node在运行
+def get_running_node():
+    import os
+    import re
 
+    x1 = os.popen("netstat -ntlp|grep -E '0.0.0.0:80[6-9][0-9]'").read()
+    x2 = x1.split("\n")
+    validInfo = [ x  for x in x2 if x ]
+    print(validInfo)
+    program = []
+    if validInfo:
+        for x in validInfo:
+            info = {}
+            port = re.search("0.0.0.0:80\d\d",x)[0].split(":")[1]
+            info['port'] = port
+            info['pid'] = re.search("\d+/",x)[0].split("/")[0]
+            program.append(info)
+    return program
+
+# tcp        0      0 0.0.0.0:8081                0.0.0.0:*                   LISTEN      20832/node
+# tcp        0      0 0.0.0.0:8091                0.0.0.0:*                   LISTEN      22487/node
+# tcp        0      0 0.0.0.0:8061                0.0.0.0:*                   LISTEN      22501/node
+# tcp        0      0 0.0.0.0:8071                0.0.0.0:*                   LISTEN      22494/node
 
 
 
