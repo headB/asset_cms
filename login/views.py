@@ -255,44 +255,89 @@ def exit(request):
 
     return JsonResponse({"message":"退出成功!"})
 
-#判断是否为数字
-def is_number(number):
-    try:
-        number1 = int(number)
-    except Exception as e:
-        return False
-    
-    return number
+
 
 ##处理提交过来的数据,并且校验完成之后,就使用多线程或者多进程来处理行为
 def estimate_process(request):
 
+    import login.models as L_M
+    est_stay_by_info = {}
+
     infoStr = str(request.POST)
     #具体教学区
-    block = request.POST.get('block')
+    block = is_number(request.POST.get('block'))
+    #block = L_M.PortType
     #具体课室
-    place = request.POST.get('place')
-    #评价种类
-    type = request.POST.get('type')
+    place = is_number(request.POST.get('place'))
+
     #详细评价
-    typeDetail = request.POST.get('typeDetail')
+    typeDetail = is_number(request.POST.get('typeDetail'))
+    
     #被评价人的名字
     user_name = request.POST.get('user_name')
     #评价的班级
     password = request.POST.get('password')
     ##具体学科
-    subject = request.POST.get('subject')
+    subject = is_number(request.POST.get('subject'))
+
+    
+    #评价种类
+    ##根据评价种类,去获取需要启动什么端口,走!
+    type = is_number(request.POST.get('type'))
+    
+
+    ##全部输入的信息都不能缺少!!
+    post_val = block and place and typeDetail and user_name and password and subject
+    if post_val:
+        pass
+    else:
+        return JsonResponse({"lack of keyWord Error:":str(request.POST)})
+
+
+    typeDetail_1 = L_M.PortType.objects.filter(id=typeDetail)
+    type_1 = L_M.PortType.objects.filter(id=type)
+    ##检验信息的有效性
+    if type_1:
+        if typeDetail_1:
+            if user_name:
+                if password:
+                    if subject:
+                        if block:
+                            if place:
+                                pass
+                            else:
+                                return JsonResponse({'placeError':"错误"})
+                        else:
+                            return JsonResponse({'block':"错误"})
+                    else:
+                        return JsonResponse({'subject':"错误"})
+                else:
+                    return JsonResponse({'password':"错误"})
+            else:
+                return JsonResponse({'username':"错误"})
+        else:
+            return JsonResponse({'typeDetail':"错误"})
+    else:
+        return JsonResponse({'type':"错误"})
+
+    port_type = login.models.PortType.objects.filter(id=type)
+    est_stay_by_info['type_port'] = port_type[0].port
+    
+    #获取评价种类具体名称-关键-例如是java基础对应是java-jichu文件
+    est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else login.models.PortType.objects.filter(id=typeDetail)
+
+    #虽然拿到了初始化端口,但是,并不是表示可以直接使用!.还是需要对比当前有没有被占用.!
+    #但是暂时不做细节!直接用来当启动.!
 
     estimatingInfo = get_running_node()
 
-    print(estimatingInfo)
-
-
-
+    ##根据上面已经获取到的信息,整理一下,准备去调用node.js去启动评价程序了.!
+    ##关键首先是端口不冲突
+    ##
     
     return JsonResponse({'content':infoStr,'estimateInfo':estimatingInfo})
     
-
+#def 
 
 def network_test(request):
     import os
@@ -335,7 +380,14 @@ def get_running_node():
     return program
 
 
-
+#判断是否为数字
+def is_number(number):
+    try:
+        number1 = int(number)
+    except Exception as e:
+        return False
+    
+    return number
 
 
 
