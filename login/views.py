@@ -286,6 +286,9 @@ def estimate_process(request):
     estimatingInfo = get_running_node()
 
     print(estimatingInfo)
+
+
+
     
     return JsonResponse({'content':infoStr,'estimateInfo':estimatingInfo})
     
@@ -331,10 +334,6 @@ def get_running_node():
             program.append(info)
     return program
 
-# tcp        0      0 0.0.0.0:8081                0.0.0.0:*                   LISTEN      20832/node
-# tcp        0      0 0.0.0.0:8091                0.0.0.0:*                   LISTEN      22487/node
-# tcp        0      0 0.0.0.0:8061                0.0.0.0:*                   LISTEN      22501/node
-# tcp        0      0 0.0.0.0:8071                0.0.0.0:*                   LISTEN      22494/node
 
 
 
