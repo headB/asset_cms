@@ -137,10 +137,7 @@ def check_login(request):
 
     ##获取当前时间
 
-def getTime():
-    from datetime import datetime
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return time
+
 
 ##展示注册页面
 def register(request):
@@ -272,6 +269,8 @@ def estimate_process(request):
 
     #详细评价
     typeDetail = is_number(request.POST.get('typeDetail'))
+    #当时这个课室的总人数
+    total = is_number(request.POST.get('total'))
     
     #被评价人的名字
     user_name = request.POST.get('user_name')
@@ -280,7 +279,6 @@ def estimate_process(request):
     ##具体学科
     subject = is_number(request.POST.get('subject'))
 
-    
     #评价种类
     ##根据评价种类,去获取需要启动什么端口,走!
     type = is_number(request.POST.get('type'))
@@ -296,14 +294,17 @@ def estimate_process(request):
 
     typeDetail_1 = L_M.PortType.objects.filter(id=typeDetail)
     type_1 = L_M.PortType.objects.filter(id=type)
-    ##检验信息的有效性
+    place_1 = L_M.ClassRoom.objects.filter(id=place)
+    #========================================================#
+    ##检验信息的有效性 -------------重要------------------------
+    #========================================================#
     if type_1:
         if typeDetail_1:
             if user_name:
                 if password:
                     if subject:
                         if block:
-                            if place:
+                            if place_1:
                                 pass
                             else:
                                 return JsonResponse({'placeError':"错误"})
@@ -320,11 +321,22 @@ def estimate_process(request):
     else:
         return JsonResponse({'type':"错误"})
 
-    port_type = login.models.PortType.objects.filter(id=type)
-    est_stay_by_info['type_port'] = port_type[0].port
+    #==================================================================+
+    #重要-----整理所有有效信息去准备调用node启动评价程序!.
+    #==================================================================+
+    port_type = L_M.PortType.objects.filter(id=typeDetail)
+    est_stay_by_info['type_port'] = L_M.PortType.objects.filter(id=port_type[0].tid)[0].port
+    print(place_1)
+    est_stay_by_info['ip'] = place_1[0].ip_addr
+    est_stay_by_info['acl'] = place_1[0].ACL
+    est_stay_by_info['teacher'] = user_name
+    est_stay_by_info['class_name'] = password
+    est_stay_by_info['total'] = total
+
     
     #获取评价种类具体名称-关键-例如是java基础对应是java-jichu文件
-    est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else login.models.PortType.objects.filter(id=typeDetail)
+    est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else L_M.PortType.objects.filter(id=port_type[0].tid)[0].rname
+   
 
     #虽然拿到了初始化端口,但是,并不是表示可以直接使用!.还是需要对比当前有没有被占用.!
     #但是暂时不做细节!直接用来当启动.!
@@ -335,7 +347,7 @@ def estimate_process(request):
     ##关键首先是端口不冲突
     ##
     
-    return JsonResponse({'content':infoStr,'estimateInfo':estimatingInfo})
+    return JsonResponse({'content':infoStr,'estimateInfo':estimatingInfo,'prepare_info':str(est_stay_by_info)})
     
 #def 
 
@@ -389,5 +401,7 @@ def is_number(number):
     
     return number
 
-
-
+def getTime():
+    from datetime import datetime
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return time
