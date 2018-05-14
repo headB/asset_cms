@@ -1,6 +1,7 @@
 from django.shortcuts import render,HttpResponse,redirect
 from django.http import JsonResponse
 import hashlib
+from login.common_func import *
 
 #from django.http import request
 
@@ -233,18 +234,6 @@ def ajax_estimate(request):
         else:
             return HttpResponse()
 
-                
-    
-    ##课室查询
-    # if request.GET.get(''):
-    #     pass
-    
-    #学科查询
-    #if request.GET.get(''):
-    #    pass
-
-    
-
 ##退出登录
 def exit(request):
     del request.session['uid']
@@ -252,12 +241,11 @@ def exit(request):
 
     return JsonResponse({"message":"退出成功!"})
 
-
-
 ##处理提交过来的数据,并且校验完成之后,就使用多线程或者多进程来处理行为
 def estimate_process(request):
 
     import login.models as L_M
+    global est_stay_by_info
     est_stay_by_info = {}
 
     infoStr = str(request.POST)
@@ -326,82 +314,50 @@ def estimate_process(request):
     #==================================================================+
     port_type = L_M.PortType.objects.filter(id=typeDetail)
     est_stay_by_info['type_port'] = L_M.PortType.objects.filter(id=port_type[0].tid)[0].port
-    print(place_1)
     est_stay_by_info['ip'] = place_1[0].ip_addr
     est_stay_by_info['acl'] = place_1[0].ACL
     est_stay_by_info['teacher'] = user_name
     est_stay_by_info['class_name'] = password
     est_stay_by_info['total'] = total
 
+    #==================================================================+
+    #重要-----#循环判断这个这个端口有没有被暂用
+    #==================================================================+
+
     
     #获取评价种类具体名称-关键-例如是java基础对应是java-jichu文件
     est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else L_M.PortType.objects.filter(id=port_type[0].tid)[0].rname
    
-
+    
     #虽然拿到了初始化端口,但是,并不是表示可以直接使用!.还是需要对比当前有没有被占用.!
     #但是暂时不做细节!直接用来当启动.!
 
-    estimatingInfo = get_running_node()
+    #####========================================############==================================
+    #####========================================############==================================
+    ###超级重要,循环检测端口,看看是否可用!!
+    #####========================================############==================================
+    #####========================================############==================================
+    valid_port = is_used_port(est_stay_by_info['type_port'])
 
     ##根据上面已经获取到的信息,整理一下,准备去调用node.js去启动评价程序了.!
     ##关键首先是端口不冲突
-    ##
     
-    return JsonResponse({'content':infoStr,'estimateInfo':estimatingInfo,'prepare_info':str(est_stay_by_info)})
+    #经过上面的准备,已经启动好了一个nodejs程序了,然后现在使用curl的模式去提交请求!
+    print(valid_port)
     
-#def 
-
-def network_test(request):
-    import os
-    import re
-
-    x1 = os.popen("netstat -ntlp|grep -E '0.0.0.0:80[6-9][0-9]'").read()
-    x2 = x1.split("\n")
-    validInfo = [ x  for x in x2 if x ]
-    print(validInfo)
-    program = []
-    if validInfo:
-        for x in validInfo:
-            info = {}
-            port = re.search("0.0.0.0:80\d\d",x)[0].split(":")[1]
-            info['port'] = port
-            info['pid'] = re.search("\d+/",x)[0].split("/")[0]
-            program.append(info)
-    print(program)
-
-    return JsonResponse({'content':'CC'})
+    return JsonResponse({'content':infoStr,'prepare_info':str(est_stay_by_info)})
 
 
-#检测目前有哪些node在运行
-def get_running_node():
-    import os
-    import re
-
-    x1 = os.popen("netstat -ntlp|grep -E '0.0.0.0:80[6-9][0-9]'").read()
-    x2 = x1.split("\n")
-    validInfo = [ x  for x in x2 if x ]
-    print(validInfo)
-    program = []
-    if validInfo:
-        for x in validInfo:
-            info = {}
-            port = re.search("0.0.0.0:80\d\d",x)[0].split(":")[1]
-            info['port'] = port
-            info['pid'] = re.search("\d+/",x)[0].split("/")[0]
-            program.append(info)
-    return program
-
-
-#判断是否为数字
-def is_number(number):
-    try:
-        number1 = int(number)
-    except Exception as e:
-        return False
+def set_estimating(port):
+    est_stay_by_info['type_port'] = port
     
-    return number
+    import requests
+    import json
 
-def getTime():
-    from datetime import datetime
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return time
+    estimate_info = {'teacherName':'xx','className':'cc'}
+    lens = len(str(estimate_info))
+    header = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Content-Length': str(lens)}
+    x1 = requests.post("http://127.0.0.1:8081/grade/init",data=estimate_info,headers=header)
+    return  x1.json()
+    
+    
