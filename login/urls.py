@@ -13,4 +13,5 @@ urlpatterns = [
     path("index/ajax_estimate/",views.ajax_estimate),
     path("index/forwarder.php",views.estimate_process),
     path("index/manageEstimating",views.what_estimating),
+    path("index/stop_estimate/",views.stop_estimate_by_url),
 ]

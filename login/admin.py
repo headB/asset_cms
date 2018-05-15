@@ -14,7 +14,7 @@ class SubjectDeatailAdmin(admin.ModelAdmin):
     list_display = ['id','tid','subject_name','subject_teacher_name','description']
 
 class EstimateHistoryAdmin(admin.ModelAdmin):
-    list_display = ['id','teacher_name','class_name','total','setting_time']
+    list_display = ['id','teacher_name','class_name','total','setting_time','who']
 
 admin.site.register(models.Admin,loginAdmin)
 admin.site.register(models.ClassRoom,ClassRoom)

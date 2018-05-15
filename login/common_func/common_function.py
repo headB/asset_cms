@@ -125,6 +125,7 @@ def log_estimate(est_info):
     est_his = EstimateHistory()
     est_his.sid = est_info['subject']
     est_his.who = est_info['who']
+    est_his.who_id = est_info['who_id']
     est_his.port = est_info['type_port']
     est_his.type_detail = est_info['type_detail']
     est_his.setting_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

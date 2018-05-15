@@ -324,6 +324,7 @@ def estimate_process(request):
     est_stay_by_info['total'] = total
     est_stay_by_info['type_detail'] = typeDetail
     est_stay_by_info['who'] = request.session['uname']
+    est_stay_by_info['who_id'] = request.session['uid']
 
 
     #==================================================================+
@@ -378,21 +379,37 @@ def estimate_process(request):
 def what_estimating(request):
     
     estimating = login.models.EstimateHistory.objects.all()
+    type = login.models.PortType.objects.all()
 
-    est_info_dict = {}
+    detail_type = {}
 
-    est_info_dict['info'] = []
+    for x in type:
+        detail_type[x.id] = x.type
 
-    
-
+    est_dict = {}
+    est_dict['info'] = []
     for x in estimating:
-        detail_info = {}
-        detail_info['teacher_name'] = x.teacher_name
-        detail_info['class_name'] = x.class_name
-        #detail_info['']
-        est_info_dict['info'].append(detail_info)
+        x.type_details = detail_type[x.type_detail]
+        est_dict['info'].append(x)
+
     
-    return HttpResponse()
+    return render(request,'estimate/estimate_manage.html',est_dict)
 
 
+def stop_estimate_by_url(request):
 
+    from login.models import EstimateHistory
+
+   
+    class_info_id = request.GET.get('class_info_id')
+
+    est_info = EstimateHistory.objects.filter(class_info_id=class_info_id)
+
+    port = request.GET.get('port')
+    uid = est_info[0].who_id
+
+    if est_info[0].who_id == uid and est_info[0].class_info_id == class_info_id:
+        stop_estimate(est_info[0].port)
+        return HttpResponse("成功!")
+    else:
+        return HttpResponse("sorry!失败了.!")

@@ -38,6 +38,7 @@ class SubjectDetail(models.Model):
 class EstimateHistory(models.Model):
     sid = models.IntegerField()
     who = models.CharField(max_length=20)
+    who_id = models.IntegerField(default=-1)
     port = models.IntegerField()
     type_detail = models.IntegerField()
     setting_time = models.DateTimeField()
