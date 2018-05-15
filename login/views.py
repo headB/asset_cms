@@ -338,26 +338,38 @@ def estimate_process(request):
     #####========================================############==================================
     #####========================================############==================================
     valid_port = is_used_port(est_stay_by_info['type_port'])
+    est_stay_by_info['type_port'] = valid_port
+
 
     ##根据上面已经获取到的信息,整理一下,准备去调用node.js去启动评价程序了.!
     ##关键首先是端口不冲突
-    
+    generate_config(est_stay_by_info)
+    start_estimate(valid_port)
+
+
+    ##最后一步就是设置评价信息到node.js(POST)
+    set_estimating(est_stay_by_info)
+
+
     #经过上面的准备,已经启动好了一个nodejs程序了,然后现在使用curl的模式去提交请求!
-    print(valid_port)
+    #首先是先生成配置文件,然后执行start_estimate
+    
     
     return JsonResponse({'content':infoStr,'prepare_info':str(est_stay_by_info)})
 
 
-def set_estimating(port):
-    est_stay_by_info['type_port'] = port
+def set_estimating(est_info):
     
     import requests
-    import json
-
-    estimate_info = {'teacherName':'xx','className':'cc'}
+    import time
+    time.sleep(0.8)
+    estimate_info = {'teacherName':est_info['teacher'],'className':est_info['class_name']}
     lens = len(str(estimate_info))
     header = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Content-Length': str(lens)}
-    x1 = requests.post("http://127.0.0.1:8081/grade/init",data=estimate_info,headers=header)
+    x1 = requests.post("http://127.0.0.1:%s/grade/init"%est_info['type_port'],data=estimate_info,headers=header)
     return  x1.json()
     
     
+
+
+
