@@ -22,7 +22,7 @@ def is_used_port(port_numer):
         run_port[x['port']] = x['pid']
 
     for x in range(int(port_numer),int(port_numer)+9):
-        print(run_port)
+        
         if str(x) in run_port:
             if is_set_est_info(x):
                 #已经被占用,跳到下一个条件继续循环
@@ -33,6 +33,8 @@ def is_used_port(port_numer):
                 return x
         else:
             return x
+    from django.http import HttpResponse
+    return HttpResponse("不好意思,端口都使用完了.!")
 
 
 #这个是用于判断这个已经启动的评价程序对应的端口是否已经设置评价信息
@@ -110,3 +112,39 @@ console.log("@打开浏览器输入：127.0.0.1: %s 进行使用");
     with open(position,'w') as file1:
         file1.write(content)
 
+##定义一个函数去记录评价历史
+def log_estimate(est_info):
+    from datetime import datetime,timedelta
+    #import pytz
+    from login.models import EstimateHistory
+
+    #设置好时区
+    #tz = pytz.timezone('Asia/Shanghai')
+
+    ##首先给整理好准备插入到数据库的历史记录
+    est_his = EstimateHistory()
+    est_his.sid = est_info['subject']
+    est_his.who = est_info['who']
+    est_his.port = est_info['type_port']
+    est_his.type_detail = est_info['type_detail']
+    est_his.setting_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    est_his.expired_time = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+    est_his.class_info_id = est_info['class_info_id']
+    est_his.class_room_name = est_info['class_room_name']
+    est_his.teacher_name = est_info['teacher']
+    est_his.class_name = est_info['class_name']
+    est_his.total = est_info['total']
+
+    return est_his.save()
+
+
+def set_estimating(est_info):
+    
+    import requests
+    import time
+    time.sleep(0.8)
+    estimate_info = {'teacherName':est_info['teacher'],'className':est_info['class_name']}
+    lens = len(str(estimate_info))
+    header = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Content-Length': str(lens)}
+    x1 = requests.post("http://127.0.0.1:%s/grade/init"%est_info['type_port'],data=estimate_info,headers=header)
+    return  x1.json()

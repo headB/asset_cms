@@ -318,7 +318,13 @@ def estimate_process(request):
     est_stay_by_info['acl'] = place_1[0].ACL
     est_stay_by_info['teacher'] = user_name
     est_stay_by_info['class_name'] = password
+    est_stay_by_info['class_room_name'] = place
     est_stay_by_info['total'] = total
+    est_stay_by_info['subject'] = subject
+    est_stay_by_info['total'] = total
+    est_stay_by_info['type_detail'] = typeDetail
+    est_stay_by_info['who'] = request.session['uname']
+
 
     #==================================================================+
     #重要-----#循环判断这个这个端口有没有被暂用
@@ -346,10 +352,21 @@ def estimate_process(request):
     generate_config(est_stay_by_info)
     start_estimate(valid_port)
 
-
+    #####======================================================
     ##最后一步就是设置评价信息到node.js(POST)
-    set_estimating(est_stay_by_info)
+    message = set_estimating(est_stay_by_info)
+    #####======================================================
 
+    ##简单的判断
+    if "teacherName" in message['data']:
+        est_stay_by_info['class_info_id'] = message['data']['classInfoId']
+
+        ##记录评价操作到数据库保存作为历史记录
+        log_estimate(est_stay_by_info)
+
+        return HttpResponse("评价成功!被评价老师:%s,评价班级%s"%(message['data']['teacherName'],message['data']['className']))
+    else:
+        return HttpResponse("评价失败!")
 
     #经过上面的准备,已经启动好了一个nodejs程序了,然后现在使用curl的模式去提交请求!
     #首先是先生成配置文件,然后执行start_estimate
@@ -358,18 +375,24 @@ def estimate_process(request):
     return JsonResponse({'content':infoStr,'prepare_info':str(est_stay_by_info)})
 
 
-def set_estimating(est_info):
+def what_estimating(request):
     
-    import requests
-    import time
-    time.sleep(0.8)
-    estimate_info = {'teacherName':est_info['teacher'],'className':est_info['class_name']}
-    lens = len(str(estimate_info))
-    header = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Content-Length': str(lens)}
-    x1 = requests.post("http://127.0.0.1:%s/grade/init"%est_info['type_port'],data=estimate_info,headers=header)
-    return  x1.json()
+    estimating = login.models.EstimateHistory.objects.all()
+
+    est_info_dict = {}
+
+    est_info_dict['info'] = []
+
     
+
+    for x in estimating:
+        detail_info = {}
+        detail_info['teacher_name'] = x.teacher_name
+        detail_info['class_name'] = x.class_name
+        #detail_info['']
+        est_info_dict['info'].append(detail_info)
     
+    return HttpResponse()
 
 
 

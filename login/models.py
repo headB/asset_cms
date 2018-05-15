@@ -34,4 +34,17 @@ class SubjectDetail(models.Model):
     subject_teacher_name = models.CharField(max_length=50,null=True)
     description = models.CharField(max_length=50)
 
-
+##评价历史
+class EstimateHistory(models.Model):
+    sid = models.IntegerField()
+    who = models.CharField(max_length=20)
+    port = models.IntegerField()
+    type_detail = models.IntegerField()
+    setting_time = models.DateTimeField()
+    expired_time = models.DateTimeField()
+    class_info_id = models.CharField(max_length=200)
+    class_room_name = models.CharField(max_length=100)
+    teacher_name = models.CharField(max_length=100)
+    class_name = models.CharField(max_length=100)
+    total = models.CharField(max_length=20)
+    
