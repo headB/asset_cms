@@ -335,7 +335,7 @@ def estimate_process(request):
 
 
 def what_estimating(request):
-    
+    import os
     estimating = login.models.EstimateHistory.objects.all()
     type = login.models.PortType.objects.all()
 
@@ -346,10 +346,25 @@ def what_estimating(request):
 
     est_dict = {}
     est_dict['info'] = []
-    for x in estimating:
-        x.type_details = detail_type[x.type_detail]
-        est_dict['info'].append(x)
 
+    #检查有没有多余的端口
+    run_est_info = {}
+    for x in get_running_node():
+        run_est_info[x['port']] = x['pid']
+
+    for x in estimating:
+
+        if x.port in run_est_info:
+            x.type_details = detail_type[x.type_detail]
+            est_dict['info'].append(x)
+            del run_est_info[x.port]
+
+
+    ##然后去调用函数，去查看实时的评价运行情况
+    #直接对比端口就好了.
+    for x in run_est_info:
+        os.system("kill %s"%run_est_info[x])
+    
     
     return render(request,'estimate/estimate_manage.html',est_dict)
 
