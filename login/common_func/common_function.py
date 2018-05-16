@@ -151,11 +151,36 @@ def set_estimating(est_info):
     return  x1.json()
 
 
+##打开Sqlite数据库.
+def open_sqlite(type_detail,request):
 
+    import sqlite3
+    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%type_detail
+    est_db = sqlite3.connect(est_db_path)
+    est_dbCu = est_db.cursor()
 
+    ##在这里设置权限
+    ##以部门+用户id来确定
+    pid = request.session.get('pid')
+    uid = request.session.get('uid')
+    if pid == 2:
+        sql = "select * from classinfo order by inputTime DESC limit 25"
+    else:
+        sql = "select * from classinfo where creator = '%s' order by inputTime DESC limit 25"%uid
 
+    est_dbCu.execute(sql)
+    res = est_dbCu.fetchall()
+    est_dbCu.close()
+    return res
 
-
+##用于插入信息到sqlite3
+def insert_in_sqlite3(class_info_id,type_detail,who):
+    import sqlite3
+    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%type_detail
+    est_db = sqlite3.connect(est_db_path)
+    est_dbCu = est_db.cursor()
+    est_dbCu.execute("update classinfo set creator='%s',typeDetail='%s' where id='%s'"%(who,type_detail,class_info_id))
+    est_dbCu.commit()
 
 
 

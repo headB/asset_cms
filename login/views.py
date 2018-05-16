@@ -18,8 +18,6 @@ import login.models
 
 ##登陆成功的第一个页面
 def index(request):
-    #print(request.session.has_key('cctv'))
-    #print(request.session.get("verifycode"))
     
     if not request.session.get('uid'):
         return redirect('/estimate/login/')
@@ -77,12 +75,12 @@ def check_login(request):
                 login_admin.last_login_time = getTime()
                 login_admin.last_login_ip = request.META['REMOTE_ADDR']
                 str_info = str(login_admin)
-                #print(dir(str_info))
                 login_admin.save()
 
                 ##设置session值表示成功登陆过!
                 request.session['uid'] = user_info[0].id
                 request.session['uname'] = user_info[0].username
+                request.session['pid'] = user_info[0].department
                 request.session.set_expiry(60*60*12)
 
                 #return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
@@ -177,7 +175,6 @@ def ajax_estimate(request):
     
 
     type = request.GET.get("type")
-    print("cc")
     if type:
         type = is_number(type)
         if type:
@@ -271,6 +268,7 @@ def estimate_process(request):
     #重要-----整理所有有效信息去准备调用node启动评价程序!.
     #==================================================================+
     port_type = L_M.PortType.objects.filter(id=typeDetail)
+    sort_name = L_M.PortType.objects.filter(id=port_type[0].tid)[0].rname
     est_stay_by_info['type_port'] = L_M.PortType.objects.filter(id=port_type[0].tid)[0].port
     est_stay_by_info['ip'] = place_1[0].ip_addr
     est_stay_by_info['acl'] = place_1[0].ACL
@@ -279,7 +277,6 @@ def estimate_process(request):
     est_stay_by_info['class_room_name'] = place
     est_stay_by_info['total'] = total
     est_stay_by_info['subject'] = subject
-    est_stay_by_info['total'] = total
     est_stay_by_info['type_detail'] = typeDetail
     est_stay_by_info['who'] = request.session['uname']
     est_stay_by_info['who_id'] = request.session['uid']
@@ -291,7 +288,7 @@ def estimate_process(request):
 
     
     #获取评价种类具体名称-关键-例如是java基础对应是java-jichu文件
-    est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else L_M.PortType.objects.filter(id=port_type[0].tid)[0].rname
+    est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else sort_name
    
     
     #虽然拿到了初始化端口,但是,并不是表示可以直接使用!.还是需要对比当前有没有被占用.!
@@ -323,6 +320,9 @@ def estimate_process(request):
         ##记录评价操作到数据库保存作为历史记录
         log_estimate(est_stay_by_info)
 
+        ##然后把刚刚设置的评价,再插入一些必要的信息!,例如是创建者和种类到具体的sqlite3数据库
+        insert_in_sqlite3(est_stay_by_info['class_info_id'],sort_name,est_stay_by_info['who_id'])
+
         return HttpResponse("评价成功!被评价老师:%s,评价班级%s"%(message['data']['teacherName'],message['data']['className']))
     else:
         return HttpResponse("评价失败!")
@@ -333,13 +333,14 @@ def estimate_process(request):
     
     return JsonResponse({'content':infoStr,'prepare_info':str(est_stay_by_info)})
 
-
+##正在评价的对象
 def what_estimating(request):
     import os
     from datetime import datetime
     import pytz
     SH = pytz.timezone("Asia/Shanghai")
     now = datetime.now(SH)
+    #查询到整体
     estimating = login.models.EstimateHistory.objects.filter(is_stop=False)
 
     type = login.models.PortType.objects.all()
@@ -361,9 +362,16 @@ def what_estimating(request):
 
         if str(x.port) in run_est_info:
             if x.expired_time > now:
-                x.type_details = detail_type[x.type_detail]
-                est_dict['info'].append(x)
-                del run_est_info[str(x.port)]
+                ##过滤属于自己设置的评价条目
+                if x.who_id == request.session.get("uid"):
+                    x.type_details = detail_type[x.type_detail]
+                    est_dict['info'].append(x)
+                    del run_est_info[str(x.port)]
+                ##到了这一步,所以不是属于自己,但是也不能把别人正在运行
+                ##的评价关闭,所以这里也是需要需要取消加入待强制关闭名单
+                else:
+
+                    del run_est_info[str(x.port)]
             else:
                 login.models.EstimateHistory.objects.filter(class_info_id=x.class_info_id).update(is_stop=True)
         else:
@@ -372,7 +380,6 @@ def what_estimating(request):
 
     ##然后去调用函数，去查看实时的评价运行情况
     #直接对比端口就好了.
-    print(run_est_info)
     for x in run_est_info:
         os.system("kill %s"%run_est_info[x])
     
@@ -381,6 +388,7 @@ def what_estimating(request):
     
     return render(request,'estimate/estimate_manage.html',est_dict)
 
+##历史评价
 def export_data(request):
 
     est_dict = {}
@@ -403,20 +411,12 @@ def export_data(request):
         return render(request,'estimate/export.html',est_dict)
     
     ##经过上面的简单判断之后,现在进入正式读取指定数据库文件去读取数据了,看看有没有sqlite的驱动先.
-
     from login.models import PortType
-    import sqlite3
-
     detail_type = PortType.objects.filter(id=detail)
     est_dict['type_port'] = detail_type[0].rname
+    est_dict['class_info'] = open_sqlite(est_dict['type_port'],request)
 
-    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%est_dict['type_port']
-    est_db = sqlite3.connect(est_db_path)
-    est_dbCu = est_db.cursor()
-    est_dbCu.execute("select * from classinfo order by inputTime DESC limit 10")
 
-    est_dict['class_info'] = est_dbCu.fetchall()
-    est_dbCu.close()
     
     return render(request,'estimate/export.html',est_dict)
 
@@ -445,3 +445,19 @@ def stop_estimate_by_url(request):
 
     ##剩下的结果都是停止失败!
     return HttpResponse("sorry!失败了.!")
+
+
+def export_to_text(request):
+
+    ##导出数据的关键在于
+    ##获取具体的class_info_id
+    ##获取具体详细的评价类型
+    ##然后开启具体的三个通用的端口就可以了.!
+    class_info_id = request.GET.get("class_info_id")
+    type_detail = request.GET.get("type_detail")
+
+
+
+
+
+
