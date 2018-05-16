@@ -321,7 +321,7 @@ def estimate_process(request):
         log_estimate(est_stay_by_info)
 
         ##然后把刚刚设置的评价,再插入一些必要的信息!,例如是创建者和种类到具体的sqlite3数据库
-        insert_in_sqlite3(est_stay_by_info['class_info_id'],sort_name,est_stay_by_info['who_id'])
+        insert_in_sqlite3(est_stay_by_info['class_info_id'],sort_name,typeDetail,est_stay_by_info['who_id'])
 
         return HttpResponse("评价成功!被评价老师:%s,评价班级%s"%(message['data']['teacherName'],message['data']['className']))
     else:

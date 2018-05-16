@@ -178,12 +178,12 @@ def open_sqlite(type_detail,request):
     return res
 
 ##用于插入信息到sqlite3
-def insert_in_sqlite3(class_info_id,type_detail,who):
+def insert_in_sqlite3(class_info_id,sort_name,typeDetail,who):
     import sqlite3
-    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%type_detail
+    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%sort_name
     est_db = sqlite3.connect(est_db_path)
     est_dbCu = est_db.cursor()
-    est_dbCu.execute("update classinfo set creator='%s',typeDetail='%s' where id='%s'"%(who,type_detail,class_info_id))
+    est_dbCu.execute("update classinfo set creator='%s',typeDetail='%s' where id='%s'"%(who,typeDetail,class_info_id))
     est_db.commit()
     est_db.close()
 
