@@ -1,0 +1,51 @@
+{%extends 'estimate/base.html' %}
+
+{% block body %}
+
+{% if is_choice %}
+
+<table class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1" >
+ 	
+        <tbody>
+<tr>
+        <td style="text-align:center">序号</td>
+        <td style="text-align:center">老师名字</td>
+        <td style="text-align:center">班级</td>
+        <td style="text-align:center">开启评价时间</td>
+        <td style="text-align:center" colspan="2">操作</td>
+        <td style="text-align:center">点击查看评价人数</td>
+</tr>
+        
+
+{% for x in class_info %}
+
+
+
+<tr>
+        <td style="text-align:center">{{forloop.counter}}</td>
+        <td style="text-align:center">{{x.1}}</td>
+        <td style="text-align:center">{{x.2}}</td>
+        <td style="text-align:center">{{x.3}}</td>
+        <td style="text-align:center" >操作</td>
+        <td style="text-align:center" >操作</td>
+        <td style="text-align:center"><a href='' >点击查看评价人数</a></td>
+</tr>
+
+{%endfor%}
+</tbody>
+
+{%else%}
+
+<p>请先选择需要导出评分的对象</p>
+<form name="use" action="/estimate/index/export" method="GET">
+        <input type="submit" style="font-size:25px" name="port" value="讲师" onclick="addressadd()">
+        <input type="submit" style="font-size:25px" name="port" value="班主任" onclick="addressadd()">
+        <input type="submit" style="font-size:25px" name="port" value="辅导员" onclick="addressadd()"> 
+        <input type="submit" style="font-size:25px" name="port" value="学习反馈" onclick="addressadd()">
+        </form>
+
+{%endif%}
+
+
+
+{%endblock body %}

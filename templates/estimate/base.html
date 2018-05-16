@@ -76,13 +76,13 @@
 					<ul class="nav navbar-nav">
 						<li ><a href="/">点击设置评价</a></li>
 						<li class="dropdown">
-							<a href="manageEstimating" class="dropdown-toggle" >
+							<a href="/estimate/index/manageEstimating" class="dropdown-toggle" >
 								管理当前评价
 								<b class="caret"></b>
 							</a>
 						</li>
 						<li class="dropdown">
-							<a href="managerSql" class="dropdown-toggle" >
+							<a href="/estimate/index/export" class="dropdown-toggle" >
 								评分数据导出
 								<b class="caret"></b>
 							</a>
@@ -105,15 +105,17 @@
 						</li>
 		
 		
-						<li ><a href="../exit">退出</a></li>
+						<li ><a href="/estimate/exit">退出</a></li>
 					</ul>
 				</div>
 			</nav>
 		
 		</div>
-        {% block body %}
+        {%block body %}
 
-        {%endblock body %}
+		{%endblock body %}
+		
+
 <br><br>
 <h2>powered by python,django</h2>
     </center>

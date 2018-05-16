@@ -376,9 +376,54 @@ def what_estimating(request):
     for x in run_est_info:
         os.system("kill %s"%run_est_info[x])
     
+    est_dict['title'] = "当前评价"
+    est_dict['uname'] = request.session.get("uname")
     
     return render(request,'estimate/estimate_manage.html',est_dict)
 
+def export_data(request):
+
+    est_dict = {}
+
+    est_dict['title'] = "当前评价"
+    est_dict['uname'] = request.session.get("uname")
+
+    type_detail = request.GET.get("port")
+    if type_detail and type_detail in ("讲师",'班主任','辅导员'):
+        est_dict['is_choice'] = True
+        if type_detail == "讲师":
+            detail = 1
+        elif type_detail == "班主任":
+            detail = 2
+        elif type_detail == "辅导员":
+            detail = 3
+            
+    else:
+        est_dict['is_choice'] = False
+        return render(request,'estimate/export.html',est_dict)
+    
+    ##经过上面的简单判断之后,现在进入正式读取指定数据库文件去读取数据了,看看有没有sqlite的驱动先.
+
+    from login.models import PortType
+    import sqlite3
+
+    detail_type = PortType.objects.filter(id=detail)
+    est_dict['type_port'] = detail_type[0].rname
+
+    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%est_dict['type_port']
+    est_db = sqlite3.connect(est_db_path)
+    est_dbCu = est_db.cursor()
+    est_dbCu.execute("select * from classinfo order by inputTime DESC limit 10")
+
+    est_dict['class_info'] = est_dbCu.fetchall()
+    est_dbCu.close()
+    
+    return render(request,'estimate/export.html',est_dict)
+
+
+    
+
+    
 
 def stop_estimate_by_url(request):
 
