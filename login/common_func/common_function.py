@@ -59,8 +59,12 @@ def stop_estimate(x):
 #启动nodejs评价程序
 def start_estimate(port):
     
-    program_dir = "/home/python/estimate/XMG-estimate/TM2015/bin/www-%s"%port
-    os.popen("nohup node %s > /dev/null 2>&1 &"%program_dir)
+        os.popen("""
+cd /home/python/estimate/XMG-estimate/TM2015
+nohup node bin/www-%s > /dev/null 2>&1 &
+"""%port)
+    #program_dir = "/home/python/estimate/XMG-estimate/TM2015/bin/www-%s"%port
+    #os.popen("nohup node %s > /dev/null 2>&1 &"%program_dir)
 
 
 #检测目前有哪些node在运行
@@ -163,7 +167,7 @@ def open_sqlite(type_detail,request):
     ##以部门+用户id来确定
     pid = request.session.get('pid')
     uid = request.session.get('uid')
-    if pid == 2:
+    if pid == 1:
         sql = "select * from classinfo order by inputTime DESC limit 25"
     else:
         sql = "select * from classinfo where creator = '%s' order by inputTime DESC limit 25"%uid
