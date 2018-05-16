@@ -180,7 +180,8 @@ def insert_in_sqlite3(class_info_id,type_detail,who):
     est_db = sqlite3.connect(est_db_path)
     est_dbCu = est_db.cursor()
     est_dbCu.execute("update classinfo set creator='%s',typeDetail='%s' where id='%s'"%(who,type_detail,class_info_id))
-    est_dbCu.commit()
+    est_db.commit()
+    est_db.close()
 
 
 
