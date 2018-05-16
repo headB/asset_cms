@@ -336,7 +336,12 @@ def estimate_process(request):
 
 def what_estimating(request):
     import os
-    estimating = login.models.EstimateHistory.objects.all()
+    from datetime import datetime
+    import pytz
+    SH = pytz.timezone("Asia/Shanghai")
+    now = datetime.now(SH)
+    estimating = login.models.EstimateHistory.objects.filter(is_stop=False)
+
     type = login.models.PortType.objects.all()
 
     detail_type = {}
@@ -354,14 +359,20 @@ def what_estimating(request):
 
     for x in estimating:
 
-        if x.port in run_est_info:
-            x.type_details = detail_type[x.type_detail]
-            est_dict['info'].append(x)
-            del run_est_info[x.port]
+        if str(x.port) in run_est_info:
+            if x.expired_time > now:
+                x.type_details = detail_type[x.type_detail]
+                est_dict['info'].append(x)
+                del run_est_info[str(x.port)]
+            else:
+                login.models.EstimateHistory.objects.filter(class_info_id=x.class_info_id).update(is_stop=True)
+        else:
+            login.models.EstimateHistory.objects.filter(class_info_id=x.class_info_id).update(is_stop=True)
 
 
     ##然后去调用函数，去查看实时的评价运行情况
     #直接对比端口就好了.
+    print(run_est_info)
     for x in run_est_info:
         os.system("kill %s"%run_est_info[x])
     
@@ -382,7 +393,10 @@ def stop_estimate_by_url(request):
     uid = est_info[0].who_id
 
     if est_info[0].who_id == uid and est_info[0].class_info_id == class_info_id:
-        stop_estimate(est_info[0].port)
-        return HttpResponse("成功!")
-    else:
-        return HttpResponse("sorry!失败了.!")
+        message = stop_estimate(est_info[0].port)
+        if "data" not in message:
+            EstimateHistory.objects.filter(class_info_id=class_info_id).update(is_stop=True)
+            return HttpResponse("成功!")
+
+    ##剩下的结果都是停止失败!
+    return HttpResponse("sorry!失败了.!")

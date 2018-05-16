@@ -48,5 +48,6 @@ class EstimateHistory(models.Model):
     teacher_name = models.CharField(max_length=100)
     class_name = models.CharField(max_length=100)
     total = models.CharField(max_length=20)
-    is_stop = models.CharField(max_length=20,default=False)
+    is_stop = models.BooleanField(default=False)
+    send_email = models.BooleanField(default=False)
     

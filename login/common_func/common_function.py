@@ -129,7 +129,7 @@ def log_estimate(est_info):
     est_his.port = est_info['type_port']
     est_his.type_detail = est_info['type_detail']
     est_his.setting_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    est_his.expired_time = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+    est_his.expired_time = (datetime.now() + timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S")
     est_his.class_info_id = est_info['class_info_id']
     est_his.class_room_name = est_info['class_room_name']
     est_his.teacher_name = est_info['teacher']
