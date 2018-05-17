@@ -500,7 +500,7 @@ def export_to_text(request):
     if  top_sort_port not in run_est_info:
         generate_config(start_info)
         start_estimate(detail_top_sort[0].port)
-        time.sleep(0.5)
+        time.sleep(0.8)
     
     ##下面这个链接可以提供给在线查看人数!!
     ##如果通过get请求过来的数据没有时间,就默认只是查看实时的数据
