@@ -15,13 +15,13 @@ def getTime():
     return time
 
 #循环判断这个这个端口有没有被暂用,还有就是是否空闲的,直接可以利用的.!
+#===========================================##################====================
+############注意了,虽然这个过程好像之前的一个地方,不过这个不一样的地方在于,这是只是将目前没有评价的对象杀一次!
+#===========================================##################====================
 def is_used_port(port_numer):
-    estimate_info = get_running_node()
-    run_port = {}
-    for x in estimate_info:
-        run_port[x['port']] = x['pid']
+    run_port = get_running_node_dict()
 
-    for x in range(int(port_numer),int(port_numer)+9):
+    for x in range(int(port_numer)+1,int(port_numer)+9):
         
         if str(x) in run_port:
             if is_set_est_info(x):
@@ -68,22 +68,21 @@ nohup node bin/www-%s > /dev/null 2>&1 &
 
 
 #检测目前有哪些node在运行
-def get_running_node():
+def get_running_node_dict():
     import os
     import re
 
     x1 = os.popen("netstat -ntlp|grep -E '0.0.0.0:80[6-9][0-9]'").read()
     x2 = x1.split("\n")
     validInfo = [ x  for x in x2 if x ]
-    program = []
+    program = {}
     if validInfo:
         for x in validInfo:
             info = {}
             port = re.search("0.0.0.0:80\d\d",x)[0].split(":")[1]
-            info['port'] = port
-            info['pid'] = re.search("\d+/",x)[0].split("/")[0]
-            program.append(info)
+            program[port] = re.search("\d+/",x)[0].split("/")[0]
     return program
+
 
 
 ##===============================================
@@ -154,6 +153,17 @@ def set_estimating(est_info):
     x1 = requests.post("http://127.0.0.1:%s/grade/init"%est_info['type_port'],data=estimate_info,headers=header)
     return  x1.json()
 
+##获取具体的评价信息,例如是每一个学生的具体ABCD评价
+def open_sqlite_common(type_detail,calss_info_id):
+    import sqlite3
+    est_db_path = "/home/python/estimate/XMG-estimate/TM2015/db/grade-%s.db"%type_detail
+    est_db = sqlite3.connect(est_db_path)
+    est_dbCu = est_db.cursor()
+    sql = "select * from comment where classInfoId='%s'"%calss_info_id
+    est_dbCu.execute(sql)
+    res1 = est_dbCu.fetchall()
+    est_db.close()
+    return res1
 
 ##打开Sqlite数据库.
 def open_sqlite(type_detail,request):

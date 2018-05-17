@@ -1,5 +1,5 @@
 from django.shortcuts import render,HttpResponse,redirect
-from django.http import JsonResponse
+from django.http import JsonResponse,StreamingHttpResponse,FileResponse
 import hashlib
 from login.common_func import *
 
@@ -354,9 +354,8 @@ def what_estimating(request):
     est_dict['info'] = []
 
     #检查有没有多余的端口
-    run_est_info = {}
-    for x in get_running_node():
-        run_est_info[x['port']] = x['pid']
+    run_est_info = get_running_node_dict()
+    
 
     for x in estimating:
 
@@ -390,7 +389,7 @@ def what_estimating(request):
 
 ##历史评价
 def export_data(request):
-
+    from datetime import datetime
     est_dict = {}
 
     est_dict['title'] = "当前评价"
@@ -414,16 +413,24 @@ def export_data(request):
     from login.models import PortType
     detail_type = PortType.objects.filter(id=detail)
     est_dict['type_port'] = detail_type[0].rname
-    est_dict['class_info'] = open_sqlite(est_dict['type_port'],request)
+    est_dict['class_info_1'] = open_sqlite(est_dict['type_port'],request)
 
+    #算出总这次输出结果的总个数
+    #total = len(est_dict['class_info_1'])
+    est_dict['class_info'] = []
 
+    for x in est_dict['class_info_1']:
+        y2 = []
+        for y in range(0,len(x)):
+            if y == 3:
+                time = x[3]/1000
+                y2.append(datetime.fromtimestamp(time))
+            else:
+                y2.append(x[y])
+        est_dict['class_info'].append(y2)
     
     return render(request,'estimate/export.html',est_dict)
 
-
-    
-
-    
 
 def stop_estimate_by_url(request):
 
@@ -448,16 +455,73 @@ def stop_estimate_by_url(request):
 
 
 def export_to_text(request):
-
+    import requests
+    import time
+    import os
+    from login.models import PortType
     ##导出数据的关键在于
     ##获取具体的class_info_id
     ##获取具体详细的评价类型
-    ##然后开启具体的三个通用的端口就可以了.!
+    ##然后开启具体详细的评价类型的端口就可以了.!
+
+    #首先获取该具体详细的评分类别
+    ##然后再获取该评分类型的上一级总类型
+
+    ##先获取数据集
+    port_type_a = PortType.objects.all()
+
     class_info_id = request.GET.get("class_info_id")
-    type_detail = request.GET.get("type_detail")
+    type_detail = is_number(request.GET.get("type_detail"))
+    teacher_name = request.GET.get("teacher_name")
+    class_name = request.GET.get("class_name")
+    date = request.GET.get("date")
 
+    if not (class_info_id and type_detail):
+        return JsonResponse({"message":"errorPost"})
 
+    #获取到详细分类==========>用于配合指定模板来导出数据
+    detail_a = port_type_a.filter(id=type_detail)
 
+    ##判断出最终用于导出模板分类
+    detail_sort = detail_a[0].rname if detail_a[0].rname else port_type_a.filter(id=detail_a[0].tid)[0].rname
+    #获取总分类,用于开启具体那种类型来启动程序
+    detail_top_sort = port_type_a.filter(id=detail_a[0].tid)
+    top_sort_port = str(detail_top_sort[0].port)
+    #运行,同样都是需要检测有没有占用...不..直接杀了.!!格杀勿论.
+    run_est_info = get_running_node_dict()
 
+    # if top_sort_port in run_est_info:
+    #     os.system("kill %s"%run_est_info[top_sort_port])
+
+    ##生成指定配置以提供给程序启动
+    start_info = {'type_name':detail_top_sort[0].rname,'type_port':top_sort_port}
+
+    #检查有没有运行默认的通用端口,没有的话,就运行,否则就不同运行了.!
+    if  top_sort_port not in run_est_info:
+        generate_config(start_info)
+        start_estimate(detail_top_sort[0].port)
+        time.sleep(0.5)
+    
+    ##下面这个链接可以提供给在线查看人数!!
+    ##如果通过get请求过来的数据没有时间,就默认只是查看实时的数据
+    if not date:
+        return_res = requests.get("http://127.0.0.1:%s/grade/get?id=%s"%(detail_top_sort[0].port,class_info_id))
+        return HttpResponse(return_res)
+    
+    
+    
+    return_res = requests.get("http://127.0.0.1:%s/grade/download-%s?id=%s"%(detail_top_sort[0].port,detail_sort,class_info_id))
+    #print("http://127.0.0.1:%s/grade/download-%s?id=%s"%(detail_top_sort[0].port,detail_sort,class_info_id))
+
+    ##导入模块准备将中文url格式化
+    from urllib.parse import quote
+    the_file_name = quote(teacher_name+"-"+class_name+"-----"+date+".txt")
+   
+    response = HttpResponse(return_res)
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="%s"'%(the_file_name)
+    
+
+    return response
 
 
