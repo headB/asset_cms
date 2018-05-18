@@ -525,3 +525,48 @@ def export_to_text(request):
     return response
 
 
+#获取当前可用的评价条目
+def show(request):
+
+    import os
+    from django.template.loader import render_to_string
+    #调用公共函数
+    from login.models import PortType
+
+    collection = {}
+
+    for x in  PortType.objects.filter(tid=0):
+        collection[str(x.port)] = [x.type]
+        collection[str(x.port)].append(x.rname)
+
+    valid_est_info = check_run_estimate()
+
+    print(valid_est_info)
+
+    for x in valid_est_info:
+        #采用切片的方式,切倒数第二个数进行对比
+        #主要是用于快速组合对应的数据.
+        coll_port = str(x["type_port"])[0:3]+str(1)
+        collection[coll_port].append(x)
+        ##准备用于生成静态资源.!
+        static_html = "/home/python/www/html/%s.html"%collection[coll_port][1]
+
+        #如果静态文件不存在的话,直接生成====补充=====>是不是都是直接覆盖的....不好意思了.!
+        #而且是循环生成---大概都是3次或者4次
+        if not os.path.exists(static_html):
+            content = render_to_string('estimate/show.html',{'info':collection})
+            with open(static_html,'w') as static_file:
+                static_file.write(content)
+    
+
+        ##################################
+        #管理静态内容的最佳方法是,直接使用django缓存功能.
+        #################################于给定的网址，尝试从缓存中找到网址，如果页面在缓存中，直接返回缓存的页面，如果缓存中没有，一系列操作（比如查数据库）后，保存生成的页面内容到缓存系统以供下一次使用，然后返回生成的页面内容。
+        ##################################
+
+
+    return HttpResponse("生成文件成功!")
+    #return render(request,'estimate/show.html',{'valid_est':valid_est_info})
+
+
+

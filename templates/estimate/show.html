@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>评价对象-{{info.0}}</title>
+</head>
+<body>
+    <center>
+    <p style="font-size: 20px">当前评价类型---{{info.0}}</p>
+    <hr>
+
+    {%for x in info.2%}
+
+    <p style="font-size:20px"><a target="_blank" href="http://192.168.113.1:{{x.port}}">{{x.teacher_name}}==>>{{x.class_name}}</a></p>
+
+    {%endfor%}
+</center>
+</body>
+</html>

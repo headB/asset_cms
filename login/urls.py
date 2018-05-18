@@ -16,4 +16,5 @@ urlpatterns = [
     path("index/stop_estimate/",views.stop_estimate_by_url),
     path("index/export/",views.export_data),
     path("index/export_txt/",views.export_to_text),
+    path("index/show/",views.show),
 ]

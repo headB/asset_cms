@@ -198,6 +198,39 @@ def insert_in_sqlite3(class_info_id,sort_name,typeDetail,who):
     est_db.close()
 
 
+##日常生成目前能用的评价条目
+def check_run_estimate():
+    from login.models import EstimateHistory
+    ##获取在数据库里面的历史记录(条件为is_stop=False)
+    est = EstimateHistory.objects.all()
+    est_info = est.filter(is_stop=False)
+    run_est_info = get_running_node_dict()
+    
+    valid_est = []
+
+    for x  in est_info:
+        valid_est_dict = {}
+        ##晕.....对比字符串的数字和int类型的数字的时候注意了.!!晕...!!.
+        if str(x.port) in run_est_info:
+            ##如果评价项目运行中,获取班级和讲师名字,还有具体的端口号
+            valid_est_dict['teacher_name'] = x.teacher_name
+            valid_est_dict['class_name'] = x.class_name
+            valid_est_dict['type_port'] = x.port
+
+            #然后把信息保存到字典里面
+            valid_est.append(valid_est_dict)
+        else:
+            #如果已经失效了,就登记为不是有效的实时评价状态.!
+            est.filter(id=x.id).update(is_stop=True)
+        
+        
+
+    ##把有用的信息传递到模板,输出条目
+    return valid_est
+
+
+
+
 
 ##产生验证码
 def generate_verify_code(request):
