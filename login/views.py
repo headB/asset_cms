@@ -323,7 +323,11 @@ def estimate_process(request):
         ##然后把刚刚设置的评价,再插入一些必要的信息!,例如是创建者和种类到具体的sqlite3数据库
         insert_in_sqlite3(est_stay_by_info['class_info_id'],sort_name,typeDetail,est_stay_by_info['who_id'])
 
-        return HttpResponse("评价成功!被评价老师:%s,评价班级%s"%(message['data']['teacherName'],message['data']['className']))
+        ##更新一下所有评价输出静态页面
+        show()
+
+        #return HttpResponse("评价成功!被评价老师:%s,评价班级%s"%(message['data']['teacherName'],message['data']['className']))
+        return redirect("/estimate/index/manageEstimating")
     else:
         return HttpResponse("评价失败!")
 
@@ -355,7 +359,13 @@ def what_estimating(request):
 
     #检查有没有多余的端口
     run_est_info = get_running_node_dict()
-    
+
+    ##因为《正在评价》里面有一个实时评价选项，所以必须开启端口。例如80XX的某些通用端口。
+    ##获取总分类的端口先。
+    top_sort_ports = type.filter(tid=0)
+    for x in  top_sort_ports:
+        if str(x.port) not in run_est_info: 
+            start_estimate(x.port)
 
     for x in estimating:
 
@@ -525,55 +535,6 @@ def export_to_text(request):
     return response
 
 
-#获取当前可用的评价条目
-def show(request):
-
-    import os
-    from django.template.loader import render_to_string
-    #调用公共函数
-    from login.models import PortType
-
-   
-    valid_est_info = check_run_estimate()
-
-    collections = {}
-    for x in valid_est_info:
-        collect_detail = {}
-        #采用切片的方式,切倒数第二个数进行对比
-        #主要是用于快速组合对应的数据.
-        coll_port = str(x["type_port"])[0:3]+str(1)
-
-        if coll_port not in collections:
-            collections[coll_port] = {'data':[x,]}
-        else:
-            collections[coll_port]['data'].append(x)
-        ##准备用于生成静态资源.!
-        
-    
-        #如果静态文件不存在的话,直接生成====补充=====>是不是都是直接覆盖的....不好意思了.!
-        #而且是循环生成---大概都是3次或者4次
-
-    for x in  PortType.objects.filter(tid=0):
-        collection = {}
-        collection['type'] = x.type  ##中文名
-        collection['rname'] = x.rname  ##英文名
-        if str(x.port) in collections:
-            collection['data'] = collections[str(x.port)]['data'] #结果集
-
-        static_html = "/home/python/www/html/%s.html"%x.rname
-        content = render_to_string('estimate/show.html',collection)
-        with open(static_html,'w') as static_file:
-            static_file.write(content)
-    
-
-        ##################################
-        #管理静态内容的最佳方法是,直接使用django缓存功能.
-        #################################于给定的网址，尝试从缓存中找到网址，如果页面在缓存中，直接返回缓存的页面，如果缓存中没有，一系列操作（比如查数据库）后，保存生成的页面内容到缓存系统以供下一次使用，然后返回生成的页面内容。
-        ##################################
-
-
-    return HttpResponse("生成文件成功!")
-    #return render(request,'estimate/show.html',{'valid_est':valid_est_info})
 
 
 

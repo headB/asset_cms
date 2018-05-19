@@ -16,7 +16,7 @@
 			<td style="text-align:center">评价有效时间到</td>
 			<td style="text-align:center">点击查看实时人数</td>
 			<td style="text-align:center">点击停止当前评价</td>
-			<td style="text-align:center">点击查看评价人数</td>
+			
  			
 		 </tr>
 		 
@@ -28,9 +28,9 @@
 			 <td>{{x.class_name}}</td>
 			 <td>{{x.teacher_name}}</td>
 			 <td>{{x.expired_time|date:'Y年m月j日 H时i分s秒'}}</td>
-			 <td>xx</td>
+			 <td><a target='_blank' href='/estimate/index/export_txt/?teacher_name={{x.teacher_name}}&class_name={{x.class_name}}&class_info_id={{x.class_info_id}}&type_detail={{x.type_detail}}'>点击查看实时人数</a></td>
 			 <td><a onclick="return confirm('确定停止评价？---{{x.teacher_name}}--{{x.class_name}}---！！！')" href='stop_estimate/?class_info_id={{x.class_info_id}}&port={{x.port}}' target="_blank" >点击停止</a></td>
-			 <td>xx</td>
+			 
 		 </tr>
 
 		 {%endfor%}
