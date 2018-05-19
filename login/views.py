@@ -536,10 +536,6 @@ def show(request):
    
     valid_est_info = check_run_estimate()
 
-    print(valid_est_info)
-
-    ##这个是一个
-    #xx = {'8081':{},'8091':{}}
     collections = {}
     for x in valid_est_info:
         collect_detail = {}
@@ -547,25 +543,22 @@ def show(request):
         #主要是用于快速组合对应的数据.
         coll_port = str(x["type_port"])[0:3]+str(1)
 
-        # collect_detail['type'] = collection[coll_port][0]
-        # collect_detail['type_rname'] = collection[coll_port][1]
         if coll_port not in collections:
             collections[coll_port] = {'data':[x,]}
         else:
             collections[coll_port]['data'].append(x)
         ##准备用于生成静态资源.!
         
-        print(collections)
+    
         #如果静态文件不存在的话,直接生成====补充=====>是不是都是直接覆盖的....不好意思了.!
         #而且是循环生成---大概都是3次或者4次
 
     for x in  PortType.objects.filter(tid=0):
         collection = {}
-        collection['type'] = [x.type]  ##中文名
-        collection['rname'] = [x.rname]  ##英文名
+        collection['type'] = x.type  ##中文名
+        collection['rname'] = x.rname  ##英文名
         if str(x.port) in collections:
             collection['data'] = collections[str(x.port)]['data'] #结果集
-        #collections[str(x.port)] = collection
 
         static_html = "/home/python/www/html/%s.html"%x.rname
         content = render_to_string('estimate/show.html',collection)
