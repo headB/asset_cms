@@ -1,5 +1,7 @@
 #判断是否为数字
 import os
+from django.http import HttpResponse
+from .nodejs_items import return_nodejs_security
 
 def is_number(number):
     try:
@@ -109,11 +111,20 @@ console.log("@打开浏览器输入：127.0.0.1: %s 进行使用");
 });
             """%(est_info['type_name'],est_info['type_port'],est_info['type_port'])
 
-    position = "/home/python/estimate/XMG-estimate/TM2015/bin/www-%s"%est_info['type_port']
-
+    position = "/home/python/estimate/XMG-estimate/TM2015/"
+    position_www = position+"bin/www-%s"%est_info['type_port']
+    position_security = position+"routes/security.js"
     ##写入配置文件到指定位置
-    with open(position,'w') as file1:
+    with open(position_www,'w') as file1:
         file1.write(content)
+
+    ##准备生成安全检查的文件
+    security_info = return_nodejs_security(est_info['ip'])
+    if not security_info:
+        return HttpResponse("error!error ip addr")
+
+    with open(position_security,'w') as file2:
+        file2.write(security_info)
 
 ##定义一个函数去记录评价历史
 def log_estimate(est_info):
