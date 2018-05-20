@@ -19,9 +19,8 @@ import login.models
 ##登陆成功的第一个页面
 def index(request):
     
-    if not request.session.get('uid'):
-        return redirect('/estimate/login/')
-
+    # if not request.session.get('uid'):
+    #     return redirect('/estimate/login/')
 
     info = {}
     info['uid'] = request.session.get('uid')

@@ -40,6 +40,12 @@ INSTALLED_APPS = [
     'login',
 ]
 
+EXCLUDE_URL =  (
+     '/estimate/login/',
+    '/estimate/check_login/',      
+    '/estimate/exit/',      
+)
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -48,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'login.middleware.SimpleMiddleware',
 ]
 
 ROOT_URLCONF = 'asset_cms.urls'
