@@ -12,7 +12,7 @@
     <hr>
     {%for x in data%}
 
-    <p style="font-size:20px"><a target="_blank" href="http://192.168.113.1:{{x.type_port}}">{{x.teacher_name}}==>>{{x1.class_name}}</a></p>
+    <p style="font-size:20px"><a target="_blank" href="http://{{show_address}}:{{x.type_port}}">{{x.teacher_name}}==>>{{x.class_name}}</a></p>
 
     {%endfor%}
 

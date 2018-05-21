@@ -338,6 +338,7 @@ def estimate_process(request):
 
 ##正在评价的对象
 def what_estimating(request):
+    show()
     import os
     from datetime import datetime
     import pytz
@@ -393,6 +394,12 @@ def what_estimating(request):
     
     est_dict['title'] = "当前评价"
     est_dict['uname'] = request.session.get("uname")
+
+    front_end_info = login.models.FrontEndShow.objects.all()
+    if front_end_info:
+        est_dict['show_address'] = str(front_end_info[0].ip)+":"+str(front_end_info[0].port)
+    else:
+        est_dict['show_address'] = False
     
     return render(request,'estimate/estimate_manage.html',est_dict)
 
@@ -495,6 +502,7 @@ def export_to_text(request):
     detail_sort = detail_a[0].rname if detail_a[0].rname else port_type_a.filter(id=detail_a[0].tid)[0].rname
     #获取总分类,用于开启具体那种类型来启动程序
     detail_top_sort = port_type_a.filter(id=detail_a[0].tid)
+    detail_top_sort = port_type_a.filter(id=detail_a[0].tid) if detail_a[0].tid != 0 else port_type_a.filter(id=detail_a[0].id)
     top_sort_port = str(detail_top_sort[0].port)
     #运行,同样都是需要检测有没有占用...不..直接杀了.!!格杀勿论.
     run_est_info = get_running_node_dict()
@@ -505,8 +513,14 @@ def export_to_text(request):
     ##生成指定配置以提供给程序启动
     start_info = {'type_name':detail_top_sort[0].rname,'type_port':top_sort_port}
 
+    #===========!!!!!!!!!!!!!!!!!!===========================
+    ##由于需求问题,然后这里就设置一个假的,随意的ip地址了.!
+    start_info['ip'] = '192.168.113'
+    #===========!!!!!!!!!!!!!!!!!!===========================
+
     #检查有没有运行默认的通用端口,没有的话,就运行,否则就不同运行了.!
     if  top_sort_port not in run_est_info:
+
         generate_config(start_info)
         start_estimate(detail_top_sort[0].port)
         time.sleep(0.8)
@@ -520,9 +534,7 @@ def export_to_text(request):
     
     
     return_res = requests.get("http://127.0.0.1:%s/grade/download-%s?id=%s"%(detail_top_sort[0].port,detail_sort,class_info_id))
-    #print("http://127.0.0.1:%s/grade/download-%s?id=%s"%(detail_top_sort[0].port,detail_sort,class_info_id))
-
-    ##导入模块准备将中文url格式化
+    
     from urllib.parse import quote
     the_file_name = quote(teacher_name+"-"+class_name+"-----"+date+".txt")
    

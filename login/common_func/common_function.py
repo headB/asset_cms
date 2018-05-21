@@ -298,13 +298,21 @@ def generate_verify_code(request):
     #获取当前可用的评价条目
 def show():
 
+
     import os
     from django.template.loader import render_to_string
     #调用公共函数
-    from login.models import PortType
+    from login.models import PortType,FrontEndShow
 
    
     valid_est_info = check_run_estimate()
+
+    ##调出在数据库中记录的ip地址,前端展示给学生那个
+
+    front_end_info = FrontEndShow.objects.all()
+
+    if not front_end_info:
+        raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
 
     collections = {}
     for x in valid_est_info:
@@ -327,13 +335,17 @@ def show():
         collection = {}
         collection['type'] = x.type  ##中文名
         collection['rname'] = x.rname  ##英文名
+        collection['show_address'] = str(front_end_info[0].ip)
         if str(x.port) in collections:
+            
             collection['data'] = collections[str(x.port)]['data'] #结果集
-
+        
         static_html = "/home/python/www/html/%s.html"%x.rname
         content = render_to_string('estimate/show.html',collection)
         with open(static_html,'w') as static_file:
             static_file.write(content)
+        
+            
     
 
         ##################################

@@ -51,3 +51,7 @@ class EstimateHistory(models.Model):
     is_stop = models.BooleanField(default=False)
     send_email = models.BooleanField(default=False)
     
+##前端学生页面信息
+class FrontEndShow(models.Model):
+    ip = models.GenericIPAddressField()
+    port = models.IntegerField()
