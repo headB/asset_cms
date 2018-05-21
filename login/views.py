@@ -25,16 +25,20 @@ def index(request):
     info = {}
     info['uid'] = request.session.get('uid')
     info['uname'] = request.session.get('uname')
-    info['title'] = "评价首页测试"
+    info['title'] = "教学通用信息管理系统"
     return render(request,'estimate/estimate_index.html',info)
         
 ##登录页面
 def login_index(request):
 
     return render(request,'login/index.html')
+##选择页面
+def choice_server(request):
+
+    return render(request,'index.html')
 
 def forward_to_estimate(request):
-
+    #return render(request,'index.html')
     return redirect('/estimate/index')
 
 #定义验证码

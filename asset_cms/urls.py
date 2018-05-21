@@ -20,5 +20,5 @@ from login import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('estimate/',include('login.urls')),
-    path('',views.forward_to_estimate),
+    path('',views.choice_server),
 ]
