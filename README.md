@@ -3,7 +3,7 @@ asset_cms powered by python3.6_django
 
 #### 1.重要!!.首先肯定先使用git更新代码,首先su python,然后cd ~ ,然后cd /home/python/asset_cms,然后更新最新代码git pull
 #### 2.现在去填写你想为django项目监听的ip和端口,具体编辑文件在/home/python/asset_cms/uwsgi.ini,主要修改ip和端口就可以了,其他不用修改.
-#### 然后cd 到/home/python/asset_cms, 开始运行脚本 ./sta,如果你想停止项目的话,运行停止运行脚本 ./sto
+#### 然后cd 到/home/python/asset_cms,先修改一下文件权限,chmod +x uwsgi,然后开始运行脚本 ./sta,如果你想停止项目的话,运行停止运行脚本 ./sto
 #### 3.手动去定义nginx配置位置,就是/etc/nginx/nginx.conf,定义好端口和ip,注意了,ip必须和上面第一个一一对应.不然就出错了.sudo vim /etc/nginx/nginx.conf
 > 具体事例
 ```nginx
