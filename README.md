@@ -7,7 +7,35 @@ asset_cms powered by python3.6_django
 #### 4.手动去定义nginx配置位置,就是/etc/nginx/nginx.conf,定义好端口和ip,注意了,ip必须和上面第一个一一对应.不然就出错了.
 > 具体事例
 ```nginx
+ server
+{
 
+        listen 81;
+        server_name localhost;
+
+
+        location / {
+
+        proxy_pass http://192.168.113.12:8000;
+        #uwsgi_pass 192.168.113.12:8000;
+        #uwsgi_pass django;
+        #include /etc/nginx/uwsgi_params;
+
+        }
+
+
+        location /student {
+        root /home/python/asset_cms/static;
+        #index index.html;
+}
+
+        location /static {
+
+        alias /home/python/asset_cms/static/;
+
+        }
+
+}
 ``` 
 
 #### 6.由于python无法使用低于1000端口的问题,所以,要么在nginx,要么在apache启动多一个服务,设置一个页面去跳转到x.x.x.x:8000
