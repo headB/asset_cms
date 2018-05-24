@@ -37,7 +37,7 @@
 			 <td>{{x.teacher_name}}</td>
 			 <td>{{x.expired_time|date:'Y年m月j日 H时i分s秒'}}</td>
 			 <td><a target='_blank' href='/estimate/index/export_txt/?teacher_name={{x.teacher_name}}&class_name={{x.class_name}}&class_info_id={{x.class_info_id}}&type_detail={{x.type_detail}}'>点击查看实时人数</a></td>
-			 <td><a onclick="return confirm('确定停止评价？---{{x.teacher_name}}--{{x.class_name}}---！！！')" href='stop_estimate/?class_info_id={{x.class_info_id}}&port={{x.port}}' target="_blank" >点击停止</a></td>
+			 <td><a onclick="return confirm('确定停止评价？---{{x.teacher_name}}--{{x.class_name}}---！！！')" href='stop_estimate/?class_info_id={{x.class_info_id}}&port={{x.port}}'>点击停止</a></td>
 			 
 		 </tr>
 

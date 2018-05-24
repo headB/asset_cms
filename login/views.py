@@ -468,7 +468,7 @@ def stop_estimate_by_url(request):
         message = stop_estimate(est_info[0].port)
         if "data" not in message:
             EstimateHistory.objects.filter(class_info_id=class_info_id).update(is_stop=True)
-            return HttpResponse("成功!")
+            return redirect("estimate/index/export/")
 
     ##剩下的结果都是停止失败!
     return HttpResponse("sorry!失败了.!")
