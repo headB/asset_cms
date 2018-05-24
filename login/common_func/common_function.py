@@ -31,7 +31,7 @@ def is_used_port(port_numer):
                 pass
             else:
                 #把进程结束
-                os.system("kill %s"%run_port[str(x)])
+                os.system("kill -9 %s"%run_port[str(x)])
                 return x
         else:
             return x
