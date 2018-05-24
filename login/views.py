@@ -26,7 +26,7 @@ def index(request):
     info['uid'] = request.session.get('uid')
     info['uname'] = request.session.get('uname')
     info['title'] = "教学通用信息管理系统"
-    return render(request,'estimate/estimate_index.html',info)
+    return render(request,'/estimate/estimate_index.html',info)
         
 ##登录页面
 def login_index(request):
@@ -405,7 +405,7 @@ def what_estimating(request):
     else:
         est_dict['show_address'] = False
     
-    return render(request,'estimate/estimate_manage.html',est_dict)
+    return render(request,'/estimate/estimate_manage.html',est_dict)
 
 ##历史评价
 def export_data(request):
@@ -468,7 +468,7 @@ def stop_estimate_by_url(request):
         message = stop_estimate(est_info[0].port)
         if "data" not in message:
             EstimateHistory.objects.filter(class_info_id=class_info_id).update(is_stop=True)
-            return redirect("estimate/index/export/")
+            return redirect("/estimate/index/export/")
 
     ##剩下的结果都是停止失败!
     return HttpResponse("sorry!失败了.!")
