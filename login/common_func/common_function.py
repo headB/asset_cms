@@ -4,14 +4,18 @@ from django.http import HttpResponse
 from .nodejs_items import return_nodejs_security
 
 ##获取通用ip来用来获取设置选项..
-from login.models import FrontEndShow
-common_ip_info = FrontEndShow.objects.all()
+common_ip = False
+##反正全局变量并没有被调用....所以,,,保险点还是做成函数算了.
+def reflash_common_ip():
+    from login.models import FrontEndShow
+    common_ip_info = FrontEndShow.objects.all()
 
-if not common_ip_info:
-    raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
-else:
-    common_ip = str(common_ip_info[0].ip)
-
+    if not common_ip_info:
+        raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
+    else:
+        common_ip1 = str(common_ip_info[0].ip)
+        global common_ip
+        common_ip = common_ip1
 
 def is_number(number):
     try:
@@ -102,7 +106,7 @@ def get_running_node_dict():
 ##===============================================
 
 def generate_config(est_info):
-
+    reflash_common_ip()
     content = """#!/usr/bin/env node
 var debug = require('debug')('TM2014');
 

@@ -1,19 +1,26 @@
 ##获取一个通用函数
-from login.models import FrontEndShow
-common_ip_info = FrontEndShow.objects.all()
+common_ip = False
+##获取通用ip来用来获取设置选项..
+common_ip = False
+##反正全局变量并没有被调用....所以,,,保险点还是做成函数算了.
+def reflash_common_ip():
+	from login.models import FrontEndShow
+	common_ip_info = FrontEndShow.objects.all()
 
-if not common_ip_info:
-    raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
-else:
-    common_ip = str(common_ip_info[0].ip)
+	if not common_ip_info:
+		raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
+	else:
+		common_ip1 = str(common_ip_info[0].ip)
+		global common_ip
+		common_ip = common_ip1
 
 ##这是一个获取了ip地址之后返回一堆str
 def return_nodejs_security(ip_addr):
+	reflash_common_ip()
+	if not ip_addr:
+		return False
 
-    if not ip_addr:
-        return False
-
-    content = """var os = require("os");
+	content = """var os = require("os");
 
 module.exports = function(){
 	
@@ -62,4 +69,4 @@ module.exports = function(){
 
     """%(common_ip,ip_addr)
 
-    return content
+	return content
