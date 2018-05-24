@@ -1,6 +1,9 @@
 # asset_cms
 asset_cms powered by python3.6_django
 
+## 这个站点的结构是   nginx->uwsgi(python)->nodejs.所以,关键就是配置好nginx和uwsgi就可以了.!
+
+
 #### 1.重要!!.首先肯定先使用git更新代码,首先su python,然后cd ~ ,然后cd /home/python/asset_cms,然后更新最新代码git pull
 #### 2.现在去填写你想为django项目监听的ip和端口,具体编辑文件在/home/python/asset_cms/uwsgi.ini,主要修改ip和端口就可以了,其他不用修改.
 #### 然后cd 到/home/python/asset_cms,先修改一下文件权限,chmod +x uwsgi sta sto,然后开始运行脚本 ./sta,如果你想停止项目的话,运行停止运行脚本 ./sto
