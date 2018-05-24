@@ -3,6 +3,16 @@ from django.http import JsonResponse,StreamingHttpResponse,FileResponse
 import hashlib
 from login.common_func import *
 
+
+##获取通用ip来用来获取设置选项..
+from login.models import FrontEndShow
+common_ip_info = FrontEndShow.objects.all()
+
+if not common_ip_info:
+    raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
+else:
+    common_ip = str(common_ip_info[0].ip)
+
 #from django.http import request
 
 # Create your views here.
@@ -368,7 +378,13 @@ def what_estimating(request):
     ##获取总分类的端口先。
     top_sort_ports = type.filter(tid=0)
     for x in  top_sort_ports:
-        if str(x.port) not in run_est_info: 
+        if str(x.port) not in run_est_info:
+            info1 = {}
+            ##每次都生成配置文件!. 
+            info1['type_name'] = x.rname
+            info1['type_port'] = x.port
+            info1['ip'] = '113'
+            generate_config(info1)
             start_estimate(x.port)
 
     for x in estimating:
@@ -532,12 +548,12 @@ def export_to_text(request):
     ##下面这个链接可以提供给在线查看人数!!
     ##如果通过get请求过来的数据没有时间,就默认只是查看实时的数据
     if not date:
-        return_res = requests.get("http://127.0.0.1:%s/grade/get?id=%s"%(detail_top_sort[0].port,class_info_id))
+        return_res = requests.get("http://%s:%s/grade/get?id=%s"%(common_ip,detail_top_sort[0].port,class_info_id))
         return HttpResponse(return_res)
     
     
     
-    return_res = requests.get("http://127.0.0.1:%s/grade/download-%s?id=%s"%(detail_top_sort[0].port,detail_sort,class_info_id))
+    return_res = requests.get("http://%s:%s/grade/download-%s?id=%s"%(common_ip,detail_top_sort[0].port,detail_sort,class_info_id))
     
     from urllib.parse import quote
     the_file_name = quote(teacher_name+"-"+class_name+"-----"+date+".txt")

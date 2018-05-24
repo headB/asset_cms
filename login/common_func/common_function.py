@@ -3,6 +3,16 @@ import os
 from django.http import HttpResponse
 from .nodejs_items import return_nodejs_security
 
+##获取通用ip来用来获取设置选项..
+from login.models import FrontEndShow
+common_ip_info = FrontEndShow.objects.all()
+
+if not common_ip_info:
+    raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
+else:
+    common_ip = str(common_ip_info[0].ip)
+
+
 def is_number(number):
     try:
         number1 = int(number)
@@ -42,7 +52,7 @@ def is_used_port(port_numer):
 #这个是用于判断这个已经启动的评价程序对应的端口是否已经设置评价信息
 def is_set_est_info(x):
     import requests
-    x1 = requests.post("http://127.0.0.1:%s/grade/init"%x).json()
+    x1 = requests.post("http://%s:%s/grade/init"%(common_ip,x)).json()
     if "teacherName" not in x1['data']:
         stop_estimate(x)
         return False
@@ -55,7 +65,7 @@ def stop_estimate(x):
 
     import requests
 
-    x1 = requests.post("http://127.0.0.1:%s/grade/commit"%x)
+    x1 = requests.post("http://%s:%s/grade/commit"%(common_ip,x))
     return  x1.json()
 
 #启动nodejs评价程序
@@ -74,14 +84,14 @@ def get_running_node_dict():
     import os
     import re
 
-    x1 = os.popen("netstat -ntlp|grep -E '0.0.0.0:80[6-9][0-9]'").read()
+    x1 = os.popen("netstat -ntlp|grep -E '%s:80[6-9][0-9]'"%(common_ip)).read()
     x2 = x1.split("\n")
     validInfo = [ x  for x in x2 if x ]
     program = {}
     if validInfo:
         for x in validInfo:
             info = {}
-            port = re.search("0.0.0.0:80\d\d",x)[0].split(":")[1]
+            port = re.search("%s:80\d\d"%common_ip,x)[0].split(":")[1]
             program[port] = re.search("\d+/",x)[0].split("/")[0]
     return program
 
@@ -105,11 +115,11 @@ process.on("uncaughtException",function(err){
 var app = require('../app-%s');
 app.set('port', process.env.PORT || %s);
 
-var server = app.listen(app.get('port'), function() {
+var server = app.listen(app.get('port'),'%s', function() {
 console.log("@启动成功");
 console.log("@打开浏览器输入：127.0.0.1: %s 进行使用");
 });
-            """%(est_info['type_name'],est_info['type_port'],est_info['type_port'])
+            """%(est_info['type_name'],est_info['type_port'],common_ip,est_info['type_port'])
 
     position = "/home/python/estimate/XMG-estimate/TM2015/"
     position_www = position+"bin/www-%s"%est_info['type_port']
@@ -161,7 +171,7 @@ def set_estimating(est_info):
     estimate_info = {'teacherName':est_info['teacher'],'className':est_info['class_name']}
     lens = len(str(estimate_info))
     header = {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Content-Length': str(lens)}
-    x1 = requests.post("http://127.0.0.1:%s/grade/init"%est_info['type_port'],data=estimate_info,headers=header)
+    x1 = requests.post("http://%s:%s/grade/init"%(common_ip,est_info['type_port']),data=estimate_info,headers=header)
     return  x1.json()
 
 ##获取具体的评价信息,例如是每一个学生的具体ABCD评价
