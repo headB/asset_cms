@@ -6,9 +6,9 @@
  <h3>
 	 {%if show_address %}
 
-	 学生需要打开的地址是 http://{{show_address}}
+	 <span style="color:red">学生需要打开的地址是 http://{{show_address}}</span>
 	 {%else%}
-	 发生错误,请联系网站技术工程师修改数据库FrontEndShow里面的详细数据信息
+	 <span style="color:red">发生错误,请联系网站技术工程师修改数据库FrontEndShow里面的详细数据信息</span>
 	 {%endif%}
  </h3>
  <br>

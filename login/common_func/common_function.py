@@ -340,7 +340,7 @@ def show():
             
             collection['data'] = collections[str(x.port)]['data'] #结果集
         
-        static_html = "/home/python/www/html/%s.html"%x.rname
+        static_html = "/home/python/asset_cms/static/student/%s.html"%x.rname
         content = render_to_string('estimate/show.html',collection)
         with open(static_html,'w') as static_file:
             static_file.write(content)
