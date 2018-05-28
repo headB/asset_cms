@@ -565,7 +565,8 @@ def export_to_text(request):
 
     return response
 
+##设置一个专门用于给管理员设置一些重要配置的页面
+def admin_setting(request):
 
-
-
+    return render(request,'estimate/admin_setting.html')
 

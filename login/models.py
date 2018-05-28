@@ -55,3 +55,9 @@ class EstimateHistory(models.Model):
 class FrontEndShow(models.Model):
     ip = models.GenericIPAddressField()
     port = models.IntegerField()
+
+##地点信息,例如是北京,上海,广州
+class Location(models.Model):
+    tid = models.IntegerField(default=0)
+    location_name = models.CharField(max_length=60)
+    description = models.CharField(max_length=100)
