@@ -32,12 +32,15 @@
               $("#login").submit(function(e){
                 var username = $("#username").val();
                 var password = $("#password").val();
-                var codeImage = $("#codeImage").val();
+                var codeImage = $("#yanzhenma").val();
                 var csrf = $("input[name='csrfmiddlewaretoken']").val();
                   var post_data = {"username":username,"password":password,"codeImage":codeImage,"csrfmiddlewaretoken":csrf}
 
                 $.post("/estimate/check_login/",post_data, function(data) {
-                 alert(data);
+                if (data['operate'] == "True"){
+                    window.location="/estimate/index";
+                }
+                 else{alert(data['message']);}
                 });
 
                 e.preventDefault();
