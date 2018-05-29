@@ -41,7 +41,7 @@
 </script>
 
 
-<p>大家好，当前站点是广州-大地商务港</p><p style="color:royalblue;font-size:30px;">注意，这里有一个重要消息，新增JAVA小码哥讲师、辅导员评价!!请选择对应的评价！</p>
+<h3>当前站点是{{location_name}}</h3><p style="color:royalblue;font-size:30px;">注意，这里有一个重要消息，新增JAVA小码哥讲师、辅导员评价!!请选择对应的评价！</p>
 <br>
 <form action="forwarder.php" method="post">
 	<table class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1">
@@ -55,11 +55,14 @@
 			<tr>
 				<td>
 					<select name="block" onchange=" getArea(this.value,'place','block') ">
-   <option value="nodata">--请选择--</option>		
-   <option value="5">大地4楼</option>		
-   <option value="7">大地5楼</option>		
+   <option value="nodata">--请选择--</option>
+   <!-- 这里是循环		 -->
+   {%for x in locations%}
+   <option value="{{x.id}}">{{x.location_name}}</option>
+   {%endfor%}		
+   <!-- <option value="7">大地5楼</option>		
    <option value="9">大地6楼</option>		
-   <option value="11">大地7楼</option>
+   <option value="11">大地7楼</option> -->
 					</select>
 				</td>
 				<td>

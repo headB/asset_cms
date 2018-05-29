@@ -28,14 +28,27 @@ import login.models
 
 ##登陆成功的第一个页面
 def index(request):
-    
+    from .models import FrontEndShow,Location
     # if not request.session.get('uid'):
     #     return redirect('/estimate/login/')
+    location_info = FrontEndShow.objects.all()[0]
+    if not location_info:
+        raise ValueError("没有获取到当前站点信息,请联系系统管理员设置数据库的FrontEndshow数据表")
+
+    ##这个时候应该是关联性查询,不过应该是大批量才对的.
+    location_id = location_info.location
+    location_name = Location.objects.filter(id=location_id)[0].location_name
+    location_names = Location.objects.filter(tid=location_id)
+
 
     info = {}
     info['uid'] = request.session.get('uid')
     info['uname'] = request.session.get('uname')
     info['title'] = "教学通用信息管理系统"
+    info['location_name'] = location_name
+    info['locations'] = location_names
+
+
     return render(request,'estimate/estimate_index.html',info)
         
 ##登录页面
