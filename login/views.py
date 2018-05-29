@@ -567,7 +567,7 @@ def export_to_text(request):
 ##设置一个专门用于给管理员设置一些重要配置的页面
 ##设置一个专门用于给管理员设置一些重要配置的页面
 def admin_setting(request):
-
+    print(request.session.get("pid"))
     if request.session.get("pid") != 1:
         return render(request,'estimate/error.html',{'message':'需要网站管理员高级权限','uname':request.session.get('uname')})
     from .models import Location,FrontEndShow
@@ -591,8 +591,8 @@ def admin_setting(request):
             if res1:
                 dict1['set_success'] = True
                 #return redirect("/estimate/admin_setting")
-    if not res1: 
-        return render(request,'estimate/error.html',{'message':'无法设置成功,请联系网站管理员!','uname':request.session.get('uname')})
+        if not res1: 
+            return render(request,'estimate/error.html',{'message':'无法设置成功,请联系网站管理员!','uname':request.session.get('uname')})
 
     #dict1 = {}
     ##获取所有教学区域
