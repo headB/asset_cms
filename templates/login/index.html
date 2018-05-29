@@ -2,10 +2,15 @@
 <html lang="en">
 
 <head>
-
+        <link rel="icon" href="/favicon.ico" />
 <title>小码哥行政通用管理系统</title>
 
 {% load staticfiles %}
+
+<!-- <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet"> -->
+<script src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="http://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+
 <link rel='stylesheet' href="{% static "login/login.css"  %}">
 
 <style>
@@ -22,20 +27,39 @@
 
 <body>
 
+        <script type="text/javascript">
+            $(document).ready(function(){
+              $("#login").submit(function(e){
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var codeImage = $("#codeImage").val();
+                var csrf = $("input[name='csrfmiddlewaretoken']").val();
+                  var post_data = {"username":username,"password":password,"codeImage":codeImage,"csrfmiddlewaretoken":csrf}
+
+                $.post("/estimate/check_login/",post_data, function(data) {
+                 alert(data);
+                });
+
+                e.preventDefault();
+               
+              });
+            });
+            </script>
+
 <form id="login" name="form1" method="post" action="../check_login/">
     {% csrf_token %}
     <h1>教学通用管理系统</h1>
     <fieldset id="inputs">
         <input id="username" name="username" type="text" placeholder="请输入用户名" autofocus required>
         <input id="password" name="password" type="password" placeholder="请输入密码" required >
-        <input id="yanzhenma" name="codeImage" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="../verify_code/" />
+        <input id="yanzhenma" name="codeImage" autocomplete="off" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="../verify_code/" /><a href="javascript:void(0)" onclick="changing()">睇唔清楚??点击尼度刷新验证码</a>
 
     </fieldset>
     <fieldset id="actions">
-        <input type="submit" id="submit" name="submit" value="登录" style="margin-right:2px"  >
+        <input  type="submit" id="submit" name="submit" value="登录" style="margin-right:2px"  >
 		<input name="button" id="submit" onclick="window.location.href='../register'" type="button" value="注册" style="margin-right:2px" >
-		<input name="button" id="submit" onclick="window.location.href='resetfn.php'" type="button" value="忘记密码？">
-        <br><input name="button" id="submit" onclick="window.location.href='http://gz.xmg520.com:82'" type="button" value="旧版系统用于控制网络">
+		<input  name="button" id="submit" onclick="window.location.href='resetfn.php'" type="button" value="忘记密码？">
+        <br><input  name="button" id="submit" onclick="window.location.href='http://gz.xmg520.com:82'" type="button" value="旧版系统用于控制网络">
 
     </fieldset>
 

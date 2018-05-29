@@ -8,7 +8,7 @@ class SimpleMiddleware(MiddlewareMixin):
         ##首先检查session，
         #print(request.path)
         
-        if request.path not in('/estimate/login/',"/estimate/check_login/","/estimate/exit/",'/estimate/verify_code/','/'):
+        if request.path not in('/estimate/login/',"/estimate/check_login/","/estimate/exit/",'/estimate/verify_code/','/','/favicon.ico'):
             if request.session.get("uid",False):
                 pass
             else:

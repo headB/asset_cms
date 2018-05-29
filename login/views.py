@@ -40,7 +40,7 @@ def index(request):
         
 ##登录页面
 def login_index(request):
-
+    
     return render(request,'login/index.html')
 ##选择页面
 def choice_server(request):
@@ -97,14 +97,13 @@ def check_login(request):
                 request.session.set_expiry(60*60*12)
 
                 #return HttpResponse("验证成功，这些信息都是你的%s"%str_info)
-                return redirect('../')
+                return JsonResponse({"message":'成功!','operate':'True'})
             else:
-                return HttpResponse("密码错误！")
+                return JsonResponse({"message":"密码错误！","opreate":"False"})
         else:
-            return HttpResponse("用户不存在！")
+            return JsonResponse({"message":"用户不存在！","opreate":"False"})
     else:
-        return HttpResponse("验证码错误")
-
+        return JsonResponse({"message":"验证码错误","opreate":"False"})
     ##获取当前时间
 
 
@@ -206,8 +205,8 @@ def ajax_estimate(request):
 def exit(request):
     del request.session['uid']
     del request.session['uname']
-
-    return JsonResponse({"message":"退出成功!"})
+    return redirect("/estimate")
+    #return JsonResponse({"message":"退出成功!"})
 
 ##处理提交过来的数据,并且校验完成之后,就使用多线程或者多进程来处理行为
 def estimate_process(request):
@@ -566,7 +565,40 @@ def export_to_text(request):
     return response
 
 ##设置一个专门用于给管理员设置一些重要配置的页面
+##设置一个专门用于给管理员设置一些重要配置的页面
 def admin_setting(request):
 
-    return render(request,'estimate/admin_setting.html')
+    if request.session.get("pid") != 1:
+        return render(request,'estimate/error.html',{'message':'需要网站管理员高级权限','uname':request.session.get('uname')})
+    from .models import Location,FrontEndShow
+    location_resource = Location.objects.all()
+    admin_setting_resource = FrontEndShow.objects.all()
+    amdin_id = admin_setting_resource[0].id
+
+    location_info = location_resource.filter(tid=0)
+    admin_setting = admin_setting_resource
+
+    block = is_number(request.POST.get('block'))
+    ip_addr = request.POST.get('ip_addr')
+
+    dict1 = {}
+
+    res1 = False
+    if block and ip_addr:
+        #print(block,ip_addr)
+        if location_resource.filter(tid=0,id=block):
+            res1 = admin_setting.filter(id=amdin_id).update(location=block,ip=ip_addr)
+            if res1:
+                dict1['set_success'] = True
+                #return redirect("/estimate/admin_setting")
+    if not res1: 
+        return render(request,'estimate/error.html',{'message':'无法设置成功,请联系网站管理员!','uname':request.session.get('uname')})
+
+    #dict1 = {}
+    ##获取所有教学区域
+    dict1['location_info'] = location_info
+    dict1['admin_setting'] = admin_setting
+    dict1['uname'] = request.session.get('uname')
+
+    return render(request,'estimate/admin_setting.html',dict1)
 
