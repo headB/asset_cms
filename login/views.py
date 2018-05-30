@@ -615,9 +615,9 @@ def admin_setting(request):
                 run_node_info = get_running_node_dict()
 
                 ##添加功能.当这里成功设置好新的ip地址之后,就杀掉所有主的80XX这些端口,等待下一次重启.!
-
+            
                 for x in est_type_info:
-                    if run_node_info[str(x.port)]:
+                    if str(x.port) in  run_node_info:
                         os.system("kill -9 %s"%run_node_info[str(x.port)])
 
                 #return redirect("/estimate/admin_setting")
