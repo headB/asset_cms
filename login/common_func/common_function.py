@@ -386,6 +386,6 @@ def get_all_running_node_dict():
     if validInfo:
         for x in validInfo:
             info = {}
-            port = re.search("%s:80\d\d"%common_ip,x)[0].split(":")[1]
+            port = re.search(":80\d\d",x)[0].split(":")[1]
             program[port] = re.search("\d+/",x)[0].split("/")[0]
     return program
