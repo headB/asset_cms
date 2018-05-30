@@ -46,6 +46,9 @@ def is_used_port(port_numer):
             else:
                 #把进程结束
                 os.system("kill -9 %s"%run_port[str(x)])
+                time.sleep(0.2)
+                if str(x) in run_port:
+                    pass
                 return x
         else:
             return x
@@ -370,3 +373,19 @@ def show():
 
     #return HttpResponse("生成文件成功!")
     #return render(request,'estimate/show.html',{'valid_est':valid_est_info})
+
+    #检测目前有哪些node在运行
+def get_all_running_node_dict():
+    import os
+    import re
+
+    x1 = os.popen("netstat -ntlp|grep -E ':80[6-9][0-9].*node'"%()).read()
+    x2 = x1.split("\n")
+    validInfo = [ x  for x in x2 if x ]
+    program = {}
+    if validInfo:
+        for x in validInfo:
+            info = {}
+            port = re.search("%s:80\d\d"%common_ip,x)[0].split(":")[1]
+            program[port] = re.search("\d+/",x)[0].split("/")[0]
+    return program

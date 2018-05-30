@@ -112,7 +112,7 @@
 			</tbody>
 		</table>
 		<br>
-		<input type="submit" value="点击提交" class="btn btn-success" onclick="return confirm('确定提交评价申请?,提交后需要大概5-8秒钟时间开启评价')">   
+		<input type="submit" value="点击提交" class="btn btn-success" onclick="if(confirm('信息都确定好了?还是你什么都不看直接YES,我猜你是!')==false)return false;">   
 		{% csrf_token %}
 	</form>
 	<br>

@@ -1,0 +1,36 @@
+{%extends 'estimate/base.html'%}
+
+{%block body%}
+
+<h2 style="color:blueviolet">以下操作请在知悉没有其他评价正在进行的时候进行操作</h2>
+<h3>以下操作将强制关闭所有运行中的评价</h3>
+
+<table class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1" >
+    
+   <tbody>
+
+        <tr>
+            <td style="text-align:center">序号</td>
+            <td style="text-align:center">端口</td>
+            <td style="text-align:center">pid</td>
+        
+        </tr>
+
+        {%for x in running_info%}
+        <tr>
+                <td style="text-align:center">{{forloop.counter}}</td>
+                <td style="text-align:center">x</td>
+                <td style="text-align:center">running_info.x</td>
+       
+    </tr>
+    {%endfor%}
+       </tbody>
+       
+       </table>
+
+
+<a href="/estimate/kill/?pid=all"><span style="color:red">点击确认强制关闭所有node程序</span></a>
+
+
+
+{%endblock body%}

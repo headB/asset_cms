@@ -632,3 +632,16 @@ def admin_setting(request):
 
     return render(request,'estimate/admin_setting.html',dict1)
 
+##设置一个专门强制清除多余的node程序的函数,请谨慎使用
+def clean_all_node(request):
+    import os
+    ##如果没有获取到get请求,就展示所有运行中的node
+    if request.session.get("pid") != 1:
+        return render(request,'estimate/error.html',{'message':'需要网站管理员高级权限','uname':request.session.get('uname')})
+    all_run_if = get_all_running_node_dict()
+    if request.session.get("pid"):
+        for x in all_run_if:
+            os.system("kill -9 %s"%all_run_if[x])
+        all_run_if = get_all_running_node_dict()
+
+    return render(request,'estimate/show_all_node.html',{"running_infp":all_run_if})

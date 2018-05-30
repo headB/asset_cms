@@ -18,4 +18,5 @@ urlpatterns = [
     path("index/export_txt/",views.export_to_text),
     path("index/show/",views.show),
     path("admin_setting/",views.admin_setting),
+    path("kill/",views.clean_all_node),
 ]
