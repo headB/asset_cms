@@ -639,7 +639,7 @@ def clean_all_node(request):
     if request.session.get("pid") != 1:
         return render(request,'estimate/error.html',{'message':'需要网站管理员高级权限','uname':request.session.get('uname')})
     all_run_if = get_all_running_node_dict()
-    if request.session.get("pid"):
+    if request.GET.get("pid"):
         for x in all_run_if:
             os.system("kill -9 %s"%all_run_if[x])
         all_run_if = get_all_running_node_dict()
