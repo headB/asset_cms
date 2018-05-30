@@ -22,7 +22,7 @@
                                 <!-- 这里是用于循环 -->
                                 {%if location_info %}
                                 {%for x in location_info%}
-                                <option {%if x.id == admin_setting.0.location %} selected="selected"  {%endif%}  value="{{x.id}}">{{x.location_name}}</option>
+                                <option {%if x.id == admin_setting.0.location.id %} selected="selected"  {%endif%}  value="{{x.id}}">{{x.location_name}}</option>
                                 {%endfor%}
                                 {%endif%}
                             </select>

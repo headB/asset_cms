@@ -36,8 +36,10 @@ def index(request):
         raise ValueError("没有获取到当前站点信息,请联系系统管理员设置数据库的FrontEndshow数据表")
 
     ##这个时候应该是关联性查询,不过应该是大批量才对的.
-    location_id = location_info.location
-    location_name = Location.objects.filter(id=location_id)[0].location_name
+
+    ##对了,这里可以使用自关联的查询方式
+    location_id = location_info.location.id
+    location_name = location_info.location.location_name
     location_names = Location.objects.filter(tid=location_id)
 
 
@@ -580,13 +582,17 @@ def export_to_text(request):
 ##设置一个专门用于给管理员设置一些重要配置的页面
 ##设置一个专门用于给管理员设置一些重要配置的页面
 def admin_setting(request):
+    import os
     print(request.session.get("pid"))
     if request.session.get("pid") != 1:
         return render(request,'estimate/error.html',{'message':'需要网站管理员高级权限','uname':request.session.get('uname')})
-    from .models import Location,FrontEndShow
+    from .models import Location,FrontEndShow,PortType
     location_resource = Location.objects.all()
     admin_setting_resource = FrontEndShow.objects.all()
     amdin_id = admin_setting_resource[0].id
+
+    ##获取所有评价类型的第一个端口.就是默认填写的8081,8091之类的.!
+    est_type_info = PortType.objects.filter(tid=0)
 
     location_info = location_resource.filter(tid=0)
     admin_setting = admin_setting_resource
@@ -603,6 +609,17 @@ def admin_setting(request):
             res1 = admin_setting.filter(id=amdin_id).update(location=block,ip=ip_addr)
             if res1:
                 dict1['set_success'] = True
+
+                #先更新一下展示ip,然后去获取当前运行的node并且返回
+                reflash_common_ip()
+                run_node_info = get_running_node_dict()
+
+                ##添加功能.当这里成功设置好新的ip地址之后,就杀掉所有主的80XX这些端口,等待下一次重启.!
+
+                for x in est_type_info:
+                    if run_node_info[str(x.port)]:
+                        os.system("kill -9 %s"%run_node_info[str(x.port)])
+
                 #return redirect("/estimate/admin_setting")
         if not res1: 
             return render(request,'estimate/error.html',{'message':'无法设置成功,请联系网站管理员!','uname':request.session.get('uname')})

@@ -51,14 +51,16 @@ class EstimateHistory(models.Model):
     is_stop = models.BooleanField(default=False)
     send_email = models.BooleanField(default=False)
     
-##前端学生页面信息
-class FrontEndShow(models.Model):
-    ip = models.GenericIPAddressField()
-    port = models.IntegerField()
-    location = models.IntegerField(default=0)
+
 
 ##地点信息,例如是北京,上海,广州
 class Location(models.Model):
     tid = models.IntegerField(default=0)
     location_name = models.CharField(max_length=60)
     description = models.CharField(max_length=100)
+
+    ##前端学生页面信息
+class FrontEndShow(models.Model):
+    ip = models.GenericIPAddressField()
+    port = models.IntegerField()
+    location = models.ForeignKey(Location,on_delete=models.PROTECT,default=1)
