@@ -644,4 +644,4 @@ def clean_all_node(request):
             os.system("kill -9 %s"%all_run_if[x])
         all_run_if = get_all_running_node_dict()
 
-    return render(request,'estimate/show_all_node.html',{"running_infp":all_run_if})
+    return render(request,'estimate/show_all_node.html',{"running_info":all_run_if})
