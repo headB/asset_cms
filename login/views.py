@@ -416,8 +416,10 @@ def what_estimating(request):
 
                     del run_est_info[str(x.port)]
             else:
+                print("kill 419")
                 login.models.EstimateHistory.objects.filter(class_info_id=x.class_info_id).update(is_stop=True)
         else:
+            print("kill 422")
             login.models.EstimateHistory.objects.filter(class_info_id=x.class_info_id).update(is_stop=True)
 
 

@@ -248,6 +248,7 @@ def check_run_estimate():
             #然后把信息保存到字典里面
             valid_est.append(valid_est_dict)
         else:
+            print("kill 251")
             #如果已经失效了,就登记为不是有效的实时评价状态.!
             est.filter(id=x.id).update(is_stop=True)
         
