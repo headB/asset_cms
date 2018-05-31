@@ -5,13 +5,25 @@ from login.common_func import *
 
 
 ##获取通用ip来用来获取设置选项..
-from login.models import FrontEndShow
-common_ip_info = FrontEndShow.objects.all()
+common_ip = False
 
-if not common_ip_info:
-    raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
-else:
-    common_ip = str(common_ip_info[0].ip)
+##反正全局变量并没有被调用....所以,,,保险点还是做成函数算了.
+def reflash_common_ip():
+    from login.models import FrontEndShow
+    common_ip_info = FrontEndShow.objects.all()
+    
+    if not common_ip_info:
+        raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
+    else:
+        common_ip1 = str(common_ip_info[0].ip)
+        global common_ip
+        common_ip = common_ip1
+
+
+
+
+reflash_common_ip()
+
 
 #from django.http import request
 
@@ -28,6 +40,7 @@ import login.models
 
 ##登陆成功的第一个页面
 def index(request):
+    
     from .models import FrontEndShow,Location
     # if not request.session.get('uid'):
     #     return redirect('/estimate/login/')
@@ -511,6 +524,7 @@ def export_to_text(request):
     import time
     import os
     from login.models import PortType
+
     ##导出数据的关键在于
     ##获取具体的class_info_id
     ##获取具体详细的评价类型
@@ -563,6 +577,7 @@ def export_to_text(request):
     
     ##下面这个链接可以提供给在线查看人数!!
     ##如果通过get请求过来的数据没有时间,就默认只是查看实时的数据
+
     if not date:
         return_res = requests.get("http://%s:%s/grade/get?id=%s"%(common_ip,detail_top_sort[0].port,class_info_id))
         return HttpResponse(return_res)
@@ -585,7 +600,7 @@ def export_to_text(request):
 ##设置一个专门用于给管理员设置一些重要配置的页面
 def admin_setting(request):
     import os
-    print(request.session.get("pid"))
+    #print(request.session.get("pid"))
     if request.session.get("pid") != 1:
         return render(request,'estimate/error.html',{'message':'需要网站管理员高级权限','uname':request.session.get('uname')})
     from .models import Location,FrontEndShow,PortType
@@ -606,14 +621,19 @@ def admin_setting(request):
 
     res1 = False
     if block and ip_addr:
-        #print(block,ip_addr)
+        
         if location_resource.filter(tid=0,id=block):
             res1 = admin_setting.filter(id=amdin_id).update(location=block,ip=ip_addr)
             if res1:
                 dict1['set_success'] = True
 
                 #先更新一下展示ip,然后去获取当前运行的node并且返回
+                ##这个是更新common_function模块的common_ip
                 reflash_common_ip()
+
+                ##这个是更新这个views模块的common_ip的,这里我学到了就是,更jupyter notebook有点像,就是全局通用.解释性.
+                from .common_func.common_function import reflash_common_ip as comm_fun_ip_reflash
+                comm_fun_ip_reflash()
                 run_node_info = get_running_node_dict()
 
                 ##添加功能.当这里成功设置好新的ip地址之后,就杀掉所有主的80XX这些端口,等待下一次重启.!
@@ -646,6 +666,5 @@ def clean_all_node(request):
             os.system("kill -9 %s"%all_run_if[x])
         all_run_if = get_all_running_node_dict()
 
-    print(all_run_if)
 
     return render(request,'estimate/show_all_node.html',{"running_info":all_run_if})

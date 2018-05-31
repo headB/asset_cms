@@ -16,11 +16,11 @@
         
         </tr>
 
-        {%for x in running_info%}
+        {%for x,y in running_info.items%}
         <tr>
                 <td style="text-align:center">{{forloop.counter}}</td>
                 <td style="text-align:center">{{x}}</td>
-                <td style="text-align:center">{{running_info.x}}</td>
+                <td style="text-align:center">{{y}}</td>
        
     </tr>
     {%endfor%}

@@ -3,19 +3,26 @@ import os
 from django.http import HttpResponse
 from .nodejs_items import return_nodejs_security
 
+
+
 ##获取通用ip来用来获取设置选项..
 common_ip = False
 ##反正全局变量并没有被调用....所以,,,保险点还是做成函数算了.
 def reflash_common_ip():
     from login.models import FrontEndShow
     common_ip_info = FrontEndShow.objects.all()
-
+    
     if not common_ip_info:
         raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
     else:
         common_ip1 = str(common_ip_info[0].ip)
         global common_ip
         common_ip = common_ip1
+
+   
+
+reflash_common_ip()
+
 
 def is_number(number):
     try:
@@ -91,15 +98,21 @@ def get_running_node_dict():
     import os
     import re
 
-    x1 = os.popen("netstat -ntlp|grep -E '%s:80[6-9][0-9]'"%(common_ip)).read()
+    x1 = os.popen("netstat -ntlp|grep -E '%s:8.*node'"%(common_ip)).read()
+    if not x1:
+        x1 = os.popen("netstat -ntlp|grep -E '%s:8.*node'"%(common_ip)).read()
+    
     x2 = x1.split("\n")
     validInfo = [ x  for x in x2 if x ]
     program = {}
     if validInfo:
         for x in validInfo:
             info = {}
-            port = re.search("%s:80\d\d"%common_ip,x)[0].split(":")[1]
-            program[port] = re.search("\d+/",x)[0].split("/")[0]
+            port = re.search("%s:8\d\d\d"%common_ip,x)[0].split(":")[1]
+            try:
+                program[port] = re.search("\d+/",x)[0].split("/")[0]
+            except:
+                raise ValueError("出现错误,可能是因为网站管理员没有设置正确的学生展示ip地址,当前设置的地址是%s,遇到此问题,请联系网站管理员"%common_ip)
     return program
 
 
@@ -109,7 +122,7 @@ def get_running_node_dict():
 ##===============================================
 
 def generate_config(est_info):
-    reflash_common_ip()
+  
     content = """#!/usr/bin/env node
 var debug = require('debug')('TM2014');
 
@@ -229,14 +242,18 @@ def insert_in_sqlite3(class_info_id,sort_name,typeDetail,who):
 ##日常生成目前能用的评价条目
 def check_run_estimate():
     from login.models import EstimateHistory
+    ##确保万无一失,还是在这个位置添加reflash把...
+    #reflash_common_ip()
+
     ##获取在数据库里面的历史记录(条件为is_stop=False)
     est = EstimateHistory.objects.all()
     est_info = est.filter(is_stop=False)
     run_est_info = get_running_node_dict()
     
     valid_est = []
-
+   
     for x  in est_info:
+       
         valid_est_dict = {}
         ##晕.....对比字符串的数字和int类型的数字的时候注意了.!!晕...!!.
         if str(x.port) in run_est_info:
@@ -380,13 +397,13 @@ def get_all_running_node_dict():
     import os
     import re
 
-    x1 = os.popen("netstat -ntlp|grep -E ':80[6-9][0-9].*node'"%()).read()
+    x1 = os.popen("netstat -ntlp|grep -E ':8[0-9][0-9][0-9].*node'"%()).read()
     x2 = x1.split("\n")
     validInfo = [ x  for x in x2 if x ]
     program = {}
     if validInfo:
         for x in validInfo:
             info = {}
-            port = re.search(":80\d\d",x)[0].split(":")[1]
+            port = re.search(":8\d\d\d",x)[0].split(":")[1]
             program[port] = re.search("\d+/",x)[0].split("/")[0]
     return program
