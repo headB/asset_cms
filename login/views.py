@@ -388,6 +388,14 @@ def what_estimating(request):
     #查询到整体
     estimating = login.models.EstimateHistory.objects.filter(is_stop=False)
 
+    ##获取课室信息!
+    classRoomInfo = login.models.ClassRoom.objects.all()
+
+    ##整合课室信息!
+    classRoomCollect = {}
+    for x in classRoomInfo:
+        classRoomCollect[x.id] = x.ip_addr
+    
     type = login.models.PortType.objects.all()
 
     detail_type = {}
@@ -396,6 +404,10 @@ def what_estimating(request):
         detail_type[x.id] = x.type
 
     est_dict = {}
+
+    #est_dict['class_info'] = classRoomCollect
+    
+
     est_dict['info'] = []
 
     #检查有没有多余的端口
@@ -421,6 +433,7 @@ def what_estimating(request):
                 ##过滤属于自己设置的评价条目
                 if x.who_id == request.session.get("uid"):
                     x.type_details = detail_type[x.type_detail]
+                    x.class_room_name = classRoomCollect[int(x.class_room_name)]
                     est_dict['info'].append(x)
                     del run_est_info[str(x.port)]
                 ##到了这一步,所以不是属于自己,但是也不能把别人正在运行

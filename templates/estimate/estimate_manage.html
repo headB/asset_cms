@@ -21,6 +21,7 @@
  			<td style="text-align:center">序号</td>
  			<td style="text-align:center">评价类别</td>
 			<td style="text-align:center">班级</td>
+			<td style="text-align:center">课室IP</td>
 			<td style="text-align:center">被评价人</td>
 			<td style="text-align:center">评价有效时间到</td>
 			<td style="text-align:center">点击查看实时人数</td>
@@ -35,6 +36,7 @@
 			 <td>{{forloop.counter}}</td>
 			 <td>{{x.type_details}}</td>
 			 <td>{{x.class_name}}</td>
+			 <td>192.168.{{x.class_room_name}}.X</td>
 			 <td>{{x.teacher_name}}</td>
 			 <td>{{x.expired_time|date:'Y年m月j日 H时i分s秒'}}</td>
 			 <td><a target='_blank' href='/estimate/index/export_txt/?teacher_name={{x.teacher_name}}&class_name={{x.class_name}}&class_info_id={{x.class_info_id}}&type_detail={{x.type_detail}}'>点击查看实时人数</a></td>
