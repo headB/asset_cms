@@ -12,5 +12,10 @@ class SimpleMiddleware(MiddlewareMixin):
             if request.session.get("uid",False):
                 pass
             else:
-                
-                return redirect('/estimate/login/')
+                if request.path.startswith('/register'):
+                    pass
+                else:
+                    return redirect('/estimate/login/')
+
+
+        
