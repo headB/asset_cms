@@ -11,6 +11,9 @@
 
     <!-- Bootstrap -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 <style>
     
     .container{
@@ -38,6 +41,11 @@
     max-width: 100%;
     margin-bottom: 5px;
     font-weight: 700; 
+    }
+
+    form li {
+        font-weight: bold;
+        color:red;
     }
 
     form input {
@@ -73,7 +81,7 @@
 
     $(function(){
      $("#verifty_code").click(function(){
-            $("#verifty_code").attr("src","/verify_code?id="+Math.random(1))
+            $("#verifty_code").attr("src","/estimate/verify_code?id="+Math.random(1))
     });
      });
 
@@ -89,7 +97,8 @@
   {% csrf_token %}
 
   {{form}}
-  <img style="" alt="看不清" id="checkpic" onclick="changing();" src="/estimate/verify_code/"><br>
+  <br>
+  <img  alt="看不清" id="verifty_code"  src="/estimate/verify_code/"><br>
     <input class="btn btn-info" style="margin-top:20px;width:100px" id="submit" name="submit" type="submit" value="点击提交">
 </form>
 
@@ -97,7 +106,6 @@
 </div>
 </div>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
   </body>
 </html>
