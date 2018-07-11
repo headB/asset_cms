@@ -83,30 +83,59 @@ def index(request):
         register_index = register()
 
 
-    return render(request,'register/reset.html',{'form':register_index})
+    return render(request,'register/reset.html',{'form':register_index,"operate_name":"账户注册"})
 
 
 ##邮件验证码发送！
-def send_register_code(request):
+def send_register_code(request,title=None,):
     
     if request.method == 'GET':
 
+
         from django.core.mail import send_mail
         from random import randint
+        from register.models import  VerifyInfo
+        import re
+        from datetime import datetime
 
+        to_send_who = request.GET.get("email",'')
+
+        email_regex = re.search(".+@(wolfcode\.cn|520it\.com)",to_send_who)
+
+        if "group" not in dir(email_regex):
+            return HttpResponse("邮箱错误,请前面的邮箱地址输入xxx@520itcom或者xxx@wolfcode.cn")
+
+        
+        check_times = VerifyInfo.objects.filter(email=to_send_who)
+
+        if check_times:
+            if check_times[0].times > 2:
+                return HttpResponse("发送达到极限")
+
+            insert_times = VerifyInfo.objects.get(email=to_send_who)
+            insert_times.times = insert_times.times+1
+        
+        else:
+            ##没有发送记录,就创建新的记录
+            insert_times = VerifyInfo()
+            insert_times.email = to_send_who
+            insert_times.times = 1
+        
         code_str = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890"
         random_code = ''
         for x in range(6):
             random_code += code_str[randint(0,len(code_str)-1)]
 
-        
+        ##把注册码保存到数据库
+        insert_times.register_code = random_code
+
 
         #接收post过来的信息，例如是邮件地址，
         to_list = ['lizhixuan@wolfcode.cn',]
+        if title == None:
+            title = "小码哥/叩丁狼评价系统-注册码"
 
-        title = "小码哥/叩丁狼评价系统-注册码"
-
-        content = """这是注册老师评价系统的注册码:%s
+        content = """这是注册老师评价系统的注册/重置码:%s
         注意：该链接到达你邮箱以后30分钟之内操作有效，超时无效，
         需要重新申请如果你没有申请用户注册码，你可以忽略该邮件，
         对你产生的干扰我们深感抱歉。
@@ -116,9 +145,18 @@ def send_register_code(request):
 
 
 
-        x1 = send_mail(title,content,"lizhixuan@wolfcode.cn",to_list,fail_silently=False)
+        x1 = send_mail(title,content,"lizhixuan@wolfcode.cn",[to_send_who,],fail_silently=False)
         
+        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         if x1:
+            
+            insert_times.expired_time = time
+            insert_times.save()
+
             return HttpResponse("发送成功！")
+
+            
+
         else:
             return HttpResponse("发送失败！")
