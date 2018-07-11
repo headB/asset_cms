@@ -83,6 +83,18 @@
      $("#verifty_code").click(function(){
             $("#verifty_code").attr("src","/estimate/verify_code?id="+Math.random(1))
     });
+     
+
+     $("#id_email").after("<input class=\"btn btn-primary\" style=\"margin-top:20px;width:200px\" id=\"send_code\"   value=\"点击发送注册码到邮箱\"><br>");
+
+     $("#send_code").click(function(){
+        $.get("/register/send_code",function(result){
+            alert(result)
+        })
+
+     });
+     
+     
      });
 
      </script>

@@ -157,7 +157,7 @@ def register_handle(request):
                     newUser.username = p_username
                     newUser.password = p_password
                     newUser.email = p_email
-                    newUser.save()
+                    #newUser.save()
                     try:
                         newUser.save()
                     except Exception  as e:
