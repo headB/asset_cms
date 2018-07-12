@@ -110,6 +110,10 @@
   {% csrf_token %}
 
   {{form}}
+  {%if error %}
+  <li>{{error}}</li>
+  {%endif%}
+ 
   <br>
   <img  alt="看不清" id="verifty_code"  src="/estimate/verify_code/"><br>
     <input class="btn btn-info" style="margin-top:20px;width:100px" id="submit" name="submit" type="submit" value="点击提交">

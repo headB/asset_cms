@@ -6,11 +6,12 @@ from django import forms
 from django.forms.widgets import PasswordInput,EmailInput,Input,HiddenInput
 from django.core.validators import RegexValidator
 
-def index(request):
+def index(request,url="register/reset.html",operate_name="账户注册"):
 
     ##导入admin模块
     from login.models import Admin
     from register.models import VerifyInfo
+    import datetime
 
     if request.method == "POST":
         
@@ -71,6 +72,12 @@ def index(request):
 
         if  register_index.is_valid():
             
+            time = datetime.datetime.now()
+            if time > register_info[0].expired_time.replace(tzinfo=None)+datetime.timedelta(hours=8):
+                print(time,register_info[0].expired_time.replace(tzinfo=None)+datetime.timedelta(hours=8))
+                return render(request,url,{'form':register_index,"operate_name":operate_name,"error":"超时错误!你的注册码冇效,请重新发送注册码到你的邮箱"})
+
+
             x1 = Admin()
             x1.username = request.POST.get('username')
             x1.email = request.POST.get('email')
@@ -79,6 +86,9 @@ def index(request):
             x1.password = request.POST.get('password')
             
             #验证都通过的话，尝试一下保存数据
+
+
+
             try:
                 x1.save()
             except Exception as e:
@@ -94,7 +104,20 @@ def index(request):
         register_index = register()
 
 
-    return render(request,'register/reset.html',{'form':register_index,"operate_name":"账户注册"})
+    return render(request,url,{'form':register_index,"operate_name":operate_name})
+
+
+def reset(request):
+    message = False
+    if request.GET.get('email'):
+        message1 =  send_register_code(request,title="密码重置")
+        message = message1.content.decode()
+        
+        
+    
+    return render(request,'register/reset_passwd.html',{'message':message})
+    #index(request,operate_name="密码重置")
+
 
 
 ##邮件验证码发送！
@@ -107,7 +130,7 @@ def send_register_code(request,title=None,):
         from random import randint
         from register.models import  VerifyInfo
         import re
-        from datetime import datetime
+        import datetime
 
         to_send_who = request.GET.get("email",'')
 
@@ -158,7 +181,7 @@ def send_register_code(request,title=None,):
 
         x1 = send_mail(title,content,"lizhixuan@wolfcode.cn",[to_send_who,],fail_silently=False)
         
-        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        time = (datetime.datetime.now()+datetime.timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
 
         if x1:
             
