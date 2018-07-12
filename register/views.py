@@ -121,7 +121,7 @@ def reset(request):
 
 
 ##邮件验证码发送！
-def send_register_code(request,title=None,):
+def send_register_code(request,title=None,append_url=None):
     
     if request.method == 'GET':
 
@@ -163,6 +163,8 @@ def send_register_code(request,title=None,):
         ##把注册码保存到数据库
         insert_times.register_code = random_code
 
+        if append_url != None:
+            random_code = "http://gz.520langma.com:82/register/"
 
         #接收post过来的信息，例如是邮件地址，
         to_list = ['lizhixuan@wolfcode.cn',]
