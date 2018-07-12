@@ -3,13 +3,14 @@ from django.shortcuts import render,HttpResponse
 # Create your views here.
 
 from django import forms
-from django.forms.widgets import PasswordInput,EmailInput,Input
+from django.forms.widgets import PasswordInput,EmailInput,Input,HiddenInput
 from django.core.validators import RegexValidator
 
 def index(request):
 
     ##导入admin模块
     from login.models import Admin
+    from register.models import VerifyInfo
 
     if request.method == "POST":
         
@@ -35,6 +36,14 @@ def index(request):
         else:
             username_regex = ''
 
+        ##获取对应的email地址，把正则传递一下
+        register_info = VerifyInfo.objects.filter(email=request.POST.get('email'))
+        if register_info:
+            register_code_regex = register_info[0].register_code
+        
+        else:
+            ##一条永远匹配不了的正则
+            register_code_regex = "^(?=[a-z])(?=[A-Z])(?=[0-9])"
 
     else:
         verify_code_regex = ''
@@ -42,16 +51,18 @@ def index(request):
 
         #还有一个问题，就是用户名重复的问题，所以，现在再设置一下。
         username_regex = ''
+        register_code_regex = ''
+
 
 
     class register(forms.Form):
         username = forms.CharField(label='登录名',validators=[RegexValidator(regex='^\w[\w_]{0,20}',message="长度不符合或者第一个是非法的空格"),RegexValidator(regex=username_regex,message='用户名已经存在，请换一个！')],max_length=20,widget=Input(attrs={'autocomplete':'off',"placeholder":'支持中文，英文，下划线组合的用户名，空格会被自动过滤'}),error_messages={"required":"该字段不能为空"},)
         password = forms.CharField(label="登陆密码",validators=[RegexValidator('^(?=[\w]*[a-z])(?=[\w]*[A-Z])(?=[\w]*[0-9])\w+',message="至少包含小写字母+大写字母+数字的密码组合，例如Xm1...,"),RegexValidator('[a-zA-Z0-9]{5,30}',message="不符合最低5位,最大30位的密码要求")],widget=PasswordInput(attrs={'placeholder':'请输入包含至少一个小写字母、大写字母、数字的密码组合，不含空格符'},render_value=True))
         password1 = forms.CharField(label="再次验证密码",validators=[RegexValidator(regex=passwd_input_regex,message="两次密码输入不正确")],widget=PasswordInput(render_value=True))
-        email = forms.EmailField(label="请输入你的公司邮箱地址",widget=EmailInput(attrs={'placeholder':'请输入xx@520it.com或者xx@wolfcode.cn类似的邮箱','autocomplete':'off'}))
-        register_code = forms.CharField(label="注册码",required=False,widget=Input(attrs={'placeholder':'请输入邮箱收到的验证码','autocomplete':'off'})) 
+        email = forms.EmailField(label="请输入你的公司邮箱地址",validators=[RegexValidator(regex='.+@(wolfcode\.cn|520it\.com)',message='邮箱格式唔岩')],widget=EmailInput(attrs={'placeholder':'请输入xx@520it.com或者xx@wolfcode.cn类似的邮箱','autocomplete':'off'}))
+        register_code = forms.CharField(label="注册码",validators=[RegexValidator(regex=register_code_regex,message="注册码错误！")],widget=Input(attrs={'placeholder':'请输入邮箱收到的验证码','autocomplete':'off'})) 
         verify_code = forms.CharField(help_text="点击图片切换验证码",label="验证码",validators=[RegexValidator(verify_code_regex),],widget=Input(attrs={'autocomplete':'off'}),error_messages={"invalid":"验证码错误"},)
-        
+        #time = forms.CharField(validators=[RegexValidator(regex='',message="超时了！")],widget=HiddenInput())
         
 
     if request.method == "POST":
