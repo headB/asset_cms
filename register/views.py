@@ -6,6 +6,7 @@ from django import forms
 from django.forms.widgets import PasswordInput,EmailInput,Input,HiddenInput
 from django.core.validators import RegexValidator
 import pytz
+from login.models import Admin
 
 
 #中国时区
@@ -130,7 +131,7 @@ def index(request,url="register/reset.html",operate_name="账户注册"):
 def reset(request):
     message = False
     if request.GET.get('email'):
-        message1 =  send_register_code(request,title="密码重置")
+        message1 =  send_register_code(request,title="密码重置",append_url="cc")
         message = message1.content.decode()
         
         
@@ -212,16 +213,24 @@ def send_register_code(request,title=None,append_url=None):
     技术支持POWER BY ©Canton wolfcode beetle，如有疑问可以直接回复邮件。
     """%random_code
 
-        if append_url:
+        x1 = Admin.objects.filter(email=to_send_who)
 
-            x1 = Admin.objects.filter(email=to_send_who)
+        if not append_url:
 
             if x1:
 
-                return  render(request,url,{'form':register_index,"operate_name":operate_name,"error":"你现在是重复注册,这是禁止的!"})
+                return  HttpResponse("你现在是重复注册,这是禁止的!")
+
+        else:
+        ##到了这一步,要检测是否有记录,如果没有就出错!.
+            if not x1:
+                return HttpResponse("对不起,你还没有注册,请注册!")
 
 
-        x1 = send_mail(title,content,"lizhixuan@wolfcode.cn",[to_send_who,],fail_silently=False)
+        try:
+            x1 = send_mail(title,content,"lizhixuan@wolfcode.cn",[to_send_who,],fail_silently=False)
+        except Exception as e:
+            return  HttpResponse("发送邮件失败！邮件异常!这个用户并不存在!")
         
         time = (datetime.datetime.now()+datetime.timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
 
