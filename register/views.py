@@ -5,30 +5,47 @@ from django.shortcuts import render,HttpResponse
 from django import forms
 from django.forms.widgets import PasswordInput,EmailInput,Input,HiddenInput
 from django.core.validators import RegexValidator
+import pytz
+
+
+#中国时区
+cst = pytz.timezone("Asia/Shanghai")
+
+#验证码大小写通用
+def verify_code_common(verify_code):
+    #验证码通用四位数 [Aa][Bb][Cc][Dd]
+    verify_code_regex = ''
+    for x in verify_code:
+        verify_code_regex += "["
+        verify_code_regex += x.lower()
+        verify_code_regex += x.upper()
+        verify_code_regex += "]"
+    return verify_code_regex
 
 def index(request,url="register/reset.html",operate_name="账户注册"):
+
+    
+
 
     ##导入admin模块
     from login.models import Admin
     from register.models import VerifyInfo
     import datetime
 
+    ##加入get判断，如果有特殊参数要求，比如是给定邮件地址
+
+
+
     if request.method == "POST":
         
-        verify_code_session = request.session.get('verifycode').lower()
-        verify_code_regex = ''
+        verify_code_regex = verify_code_common(request.session.get('verifycode').lower())
         #组装正则表达式
         #验证码通用四位数 [Aa][Bb][Cc][Dd]
-        for x in verify_code_session:
-            verify_code_regex += "["
-            verify_code_regex += x.lower()
-            verify_code_regex += x.upper()
-            verify_code_regex += "]"
-        
+       
         #设置一个密码的regex，除了需要符合指定格式，还需要两次密码验证正确
         passwd_input_regex = request.POST.get("password")
 
-        ##获取当前的用户名，看看有没有冲突
+        ##获取当前的用户名，看看有没有冲突/需要添加特殊处理，因为重置密码是需要用户名的
         username = Admin.objects.filter(username=request.POST.get('username'))
         username_regex = ''
         if username:
@@ -73,8 +90,8 @@ def index(request,url="register/reset.html",operate_name="账户注册"):
         if  register_index.is_valid():
             
             time = datetime.datetime.now()
-            if time > register_info[0].expired_time.replace(tzinfo=None)+datetime.timedelta(hours=8):
-                print(time,register_info[0].expired_time.replace(tzinfo=None)+datetime.timedelta(hours=8))
+            if time > register_info[0].expired_time.replace(tzinfo=cst)+datetime.timedelta(hours=8):
+                print(time,register_info[0].expired_time.replace(tzinfo=cst)+datetime.timedelta(hours=8))
                 return render(request,url,{'form':register_index,"operate_name":operate_name,"error":"超时错误!你的注册码冇效,请重新发送注册码到你的邮箱"})
 
 
