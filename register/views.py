@@ -81,7 +81,8 @@ def index(request,url="register/reset.html",operate_name="账户注册"):
         register_code = forms.CharField(label="注册码",validators=[RegexValidator(regex=register_code_regex,message="注册码错误！")],widget=Input(attrs={'placeholder':'请输入邮箱收到的验证码','autocomplete':'off'})) 
         verify_code = forms.CharField(help_text="点击图片切换验证码",label="验证码",validators=[RegexValidator(verify_code_regex),],widget=Input(attrs={'autocomplete':'off'}),error_messages={"invalid":"验证码错误"},)
         #time = forms.CharField(validators=[RegexValidator(regex='',message="超时了！")],widget=HiddenInput())
-        
+    
+    
 
     if request.method == "POST":
 
@@ -89,11 +90,15 @@ def index(request,url="register/reset.html",operate_name="账户注册"):
 
         if  register_index.is_valid():
             
-            time = datetime.datetime.now()
-            if time > register_info[0].expired_time.replace(tzinfo=cst)+datetime.timedelta(hours=8):
-                print(time,register_info[0].expired_time.replace(tzinfo=cst)+datetime.timedelta(hours=8))
+            time = datetime.datetime.utcnow().replace(tzinfo=cst)
+            
+            if time > register_info[0].expired_time:
                 return render(request,url,{'form':register_index,"operate_name":operate_name,"error":"超时错误!你的注册码冇效,请重新发送注册码到你的邮箱"})
 
+            is_meail_exist = Admin.objects.filter(email=request.POST.get('email'))
+
+            if is_meail_exist:
+                return render(request,url,{'form':register_index,"operate_name":operate_name,"error":"你现在是重复注册,这是禁止的!"})
 
             x1 = Admin()
             x1.username = request.POST.get('username')
@@ -103,8 +108,6 @@ def index(request,url="register/reset.html",operate_name="账户注册"):
             x1.password = request.POST.get('password')
             
             #验证都通过的话，尝试一下保存数据
-
-
 
             try:
                 x1.save()
@@ -159,9 +162,22 @@ def send_register_code(request,title=None,append_url=None):
         
         check_times = VerifyInfo.objects.filter(email=to_send_who)
 
+        #设置一个普通日期,不带time,只有date
+
+        today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        x2 = None
         if check_times:
-            if check_times[0].times > 2:
-                return HttpResponse("发送达到极限")
+            this_day = check_times[0].expired_time.replace(tzinfo=None).strftime("%Y-%m-%d")
+            if today != this_day:
+                x2 = VerifyInfo.objects.get(email=to_send_who)
+                x2.expired_time = datetime.datetime.now()+datetime.timedelta(minutes=15)
+                x2.times = 0
+                x2.save()
+           
+            if not x2:
+
+                if check_times[0].times > 2:
+                    return HttpResponse("发送达到极限")
 
             insert_times = VerifyInfo.objects.get(email=to_send_who)
             insert_times.times = insert_times.times+1
@@ -196,6 +212,13 @@ def send_register_code(request,title=None,append_url=None):
     技术支持POWER BY ©Canton wolfcode beetle，如有疑问可以直接回复邮件。
     """%random_code
 
+        if append_url:
+
+            x1 = Admin.objects.filter(email=to_send_who)
+
+            if x1:
+
+                return  render(request,url,{'form':register_index,"operate_name":operate_name,"error":"你现在是重复注册,这是禁止的!"})
 
 
         x1 = send_mail(title,content,"lizhixuan@wolfcode.cn",[to_send_who,],fail_silently=False)
@@ -208,8 +231,6 @@ def send_register_code(request,title=None,append_url=None):
             insert_times.save()
 
             return HttpResponse("发送成功！")
-
-            
 
         else:
             return HttpResponse("发送失败！")
