@@ -80,13 +80,20 @@
 <script type="text/javascript">
 
     $(function(){
+
+         var x = $("#id_reset_mark").val();
+    if (x){
+        $("#id_username").attr({"readonly":"readonly"})
+    }else{
+        $("#id_email").after("<input class='btn btn-primary' style='margin-top:20px;width:200px' id='send_code'   value='点击发送注册码到邮箱'><br>");
+
+    }
+
+
      $("#verifty_code").click(function(){
             $("#verifty_code").attr("src","/estimate/verify_code?id="+Math.random(1))
     });
      
-
-     $("#id_email").after("<input class=\"btn btn-primary\" style=\"margin-top:20px;width:200px\" id=\"send_code\"   value=\"点击发送注册码到邮箱\"><br>");
-
      $("#send_code").click(function(){
           var email = $("#id_email").val();
         $.get("/register/send_code?email="+email,function(result){
@@ -94,7 +101,12 @@
         })
 
      });
+
      
+
+    {%if username_disabled%}
+    $("#id_username").attr({"value":"{{username_disabled}}"})
+    {%endif%}
      
      });
 
