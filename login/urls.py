@@ -19,4 +19,5 @@ urlpatterns = [
     path("index/show/",views.show),
     path("admin_setting/",views.admin_setting),
     path("kill/",views.clean_all_node),
+    path("index/network/",views.network_manager)
 ]

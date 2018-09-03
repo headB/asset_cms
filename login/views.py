@@ -681,3 +681,75 @@ def clean_all_node(request):
 
 
     return render(request,'estimate/show_all_node.html',{"running_info":all_run_if})
+
+
+def network_manager(request):
+    import ftplib
+    import zipfile
+    import re
+    from .models import ClassRoom,FrontEndShow,Location
+    from django.http import HttpResponse 
+
+    from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
+
+    f = ftplib.FTP(HOSTNAME) #实例化
+    f.login(USERNAME,PASSWORD)
+
+    #获取当前路径
+    bufsize = 1024
+    fp = open("vrpcfg.zip",'wb')
+    f.retrbinary("RETR vrpcfg.zip",fp.write,bufsize)
+    fp.close()
+
+    zip_file_target = zipfile.ZipFile("vrpcfg.zip")
+    for x in zip_file_target.namelist():
+        zip_file_target.extract(x,"vrcfg.txt")
+    zip_file_target.close()
+    #打开文件
+    with open("vrcfg.txt/vrpcfg.cfg") as file1:
+        switcher_cfg = file1.readlines()
+    #然后是正则提取ACL规则
+    switcher_cfg = "".join(switcher_cfg)
+    acl_list = re.findall("acl number [\s\S]*?#",switcher_cfg)
+    #ACL_classification = []
+    ACL_classification_dict = {}
+    #按分类,保存好规则数据
+    for x in acl_list:
+        ACL_dict = {}
+        ACL_dict['name'] = re.findall("(?<=acl number )\d+",x)[0]
+        ACL_dict['rule'] = re.findall("rule.+(?=\n)",x)
+        ACL_dict['timer'] = "<span style='color:green'><b>YES</b></span>" if re.findall("time-range",x) else "<span style='color:red'><b>NO</b></span>"
+        ACL_dict['online'] = re.findall("rule.+(?=\n)",x)
+        ACL_classification_dict.update({ACL_dict['name']:ACL_dict})
+        #ACL_classification.append(ACL_dict)
+    print(ACL_classification_dict)
+    
+    #首先知道当前的教学地点
+    try:
+        locations = FrontEndShow.objects.all()
+        print(type(locations[0].location_id))
+        location = Location.objects.filter(tid=locations[0].location_id)
+        print(location)
+    except Exception as e:
+        return HttpResponse("出现严重错误，无法定位当前教学地点")
+    #结合当前实际的课室实际的数量来展示数据
+    ids = []
+    for x in location:
+        ids.append(x.id)
+
+    class_room_infos =  ClassRoom.objects.filter(block_number__in=ids)
+
+    
+    ## 尝试循环分类
+    #合并两个数据，取合集
+
+
+    for x in class_room_infos:
+        x.rules = ACL_classification_dict[str(x.ACL)]
+
+        
+    return render(request,"estimate/network.html",{"acl_infos":class_room_infos})
+
+
+def judge_network_state():
+    pass
