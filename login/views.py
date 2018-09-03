@@ -2,6 +2,11 @@ from django.shortcuts import render,HttpResponse,redirect
 from django.http import JsonResponse,StreamingHttpResponse,FileResponse
 import hashlib
 from login.common_func import *
+import re
+
+## 公用变量
+network_end_ip_list = ['0','64','32']
+network_mask_list = ['127','191','223']
 
 
 ##获取通用ip来用来获取设置选项..
@@ -721,15 +726,11 @@ def network_manager(request):
         ACL_dict['timer'] = "<span style='color:green'><b>YES</b></span>" if re.findall("time-range",x) else "<span style='color:red'><b>NO</b></span>"
         ACL_dict['online'] = re.findall("rule.+(?=\n)",x)
         ACL_classification_dict.update({ACL_dict['name']:ACL_dict})
-        #ACL_classification.append(ACL_dict)
-    print(ACL_classification_dict)
     
     #首先知道当前的教学地点
     try:
         locations = FrontEndShow.objects.all()
-        print(type(locations[0].location_id))
         location = Location.objects.filter(tid=locations[0].location_id)
-        print(location)
     except Exception as e:
         return HttpResponse("出现严重错误，无法定位当前教学地点")
     #结合当前实际的课室实际的数量来展示数据
@@ -739,10 +740,8 @@ def network_manager(request):
 
     class_room_infos =  ClassRoom.objects.filter(block_number__in=ids)
 
-    
     ## 尝试循环分类
     #合并两个数据，取合集
-
 
     for x in class_room_infos:
         x.rules = ACL_classification_dict[str(x.ACL)]
@@ -751,5 +750,74 @@ def network_manager(request):
     return render(request,"estimate/network.html",{"acl_infos":class_room_infos})
 
 
-def judge_network_state():
-    pass
+def judge_network_state(acls,network):
+    
+    """
+    :params :acls :传入字符串,并且里面的元素都是字符串类型,作用用于查看这个ACL的具体的规则
+    :params :acls :afferent a list which only have string type data
+    :params :network :子网段,字需要传入第三位数字,例如 x.x.113.x,你只需要传递113
+    """
+
+    #毋庸置疑,必须先定位全局禁止上网的语句的正则语句,这个是全断网,就看位置了
+    global_deny = "rule \d+ deny ip \n"
+    global_permit = "rule \d+ permit ip \n"
+
+    #匹配到局部ip上网
+
+    #然后设定根据当前的ip段,结合规则,看看符不符合上网规则
+    #然后,还带自动纠正功能,排列顺序
+    rule_stu_online = common_matching(network,list)
+
+    #断网正则匹配
+    rule_stu_offline1 = "rule \d+ deny ip source 192\.168\.%s\.0 0\.0\.0\.127"%network 
+    rule_stu_offline2 = "rule \d+ deny ip source 192\.168\.%s\.64 0\.0\.0\.191"%network 
+    rule_stu_offline3 = "rule \d+ deny ip source 192\.168\.%s\.32 0\.0\.0\.223"%network
+
+    #然后又设置一段检测是否有安全设置的acl规则
+    safe_rule = "rule \d+ deny ip destination 192\.168\.0.0 0.0\.255\.255"
+
+
+
+def set_network(request):
+    #然后必须放行服务器段ip
+    # :TODO
+
+
+    #用公用函数获取需要设置的具体分别设置第几条rule规则
+
+    #实在没有办法的话,就统一设置100以后的规则
+    rule_list = ['100','101','102']
+
+    for x in range(3):
+        #修复模式,假如是异常的话
+        #设置开启网络的规则
+        print("rule %s permit ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_ip_list,network_mask_list))
+
+    
+    for x in range(3):
+        #修复模式,假如是异常的话
+        #设置开启网络的规则
+        print("rule %s deny ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_ip_list,network_mask_list))
+
+    #
+
+def common_matching(net,acls,operate="permit"):
+
+    """
+    :paras :net :具体的子网ip地址,取ip的第三段,例如取 x.x.113.x的113
+    :paras :operate :传入匹配上网还是禁止上网的规则,默认是匹配上网的规则
+    :paras :acls :传入整句的acl规则,只需要字符串类型数据 
+    """
+
+    # rule_list = rule_list
+    #匹配学生上网,返回两个参数,一个是rule,一个是是否匹配,所以上面会传入的.
+    rules = []
+    for x in range(3):
+        rule_regex = "(?<=rule )\d+(?= %s ip source 192\.168\.%s\.%s 0\.0\.0\.%s)"%(operate,net,network_end_ip_list[x],network_mask_list[x])
+        rule = re.search(rule_regex,acls)
+        if rule:
+            rules.append(rules)
+    
+    return rules
+    
+
