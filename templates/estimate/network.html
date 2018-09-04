@@ -21,9 +21,9 @@
         <td style="text-align:center">{{ x.class_number }}</td>
         <td style="text-align:center">
             {% if x.switch == 'offline' %}
-            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=permit&acl=520su1314" ><button id="" class="btn btn-danger">點擊開網</button>
+            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=deny&acl=520su1314" ><button id="" class="btn btn-danger">點擊斷網</button>
             {% else %}
-            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=deny&acl=520su1314" ><button id="" class="btn btn-success">點擊斷網</button>
+            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=permit&acl=520su1314" ><button id="" class="btn btn-success">點擊開網</button>
             {% endif %}
         </a></td>
         <td style="text-align:center">{{ x.state|safe }}</td>
@@ -33,5 +33,13 @@
         {% endfor %}
     </tbody>
     </table>
+        <script type="text/javascript">
+        $(function(){
+            $(".btn").click(function(){
+                $("tbody").hide()
+            })
+        })
+
+        </script>
 
 {% endblock body %}

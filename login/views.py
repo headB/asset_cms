@@ -892,15 +892,11 @@ def judge_network_state(acls,network):
     return deny_all
     
 
-
-            
-
-    
-
 def set_network(request):
     import paramiko
     import time
     from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
+    from .models import ClassRoom
 
     #然后必须放行服务器段ip
     # :TODO
@@ -912,57 +908,123 @@ def set_network(request):
     class_id = request.GET.get("cls")
     operate = request.GET.get("operate")
 
-    print(class_id)
-    print(operate)
-
     operate_verify = re.findall("(permit|deny)",operate)
     
-
     #如果参数不完整,直接跳回网络控制页面
     if not all([class_id,operate]) or not operate_verify:
         return redirect("/estimate/index/network")
     
-    
-
     #创建ssh对象
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-
-
     ssh.connect(hostname=HOSTNAME,port=22,username=USERNAME,password=PASSWORD,allow_agent=False,look_for_keys=False)
 
     chan = ssh.invoke_shell()
-    cmds = ['sys\n']
-    res = multi_cmd(chan,cmds)
-
-    print(res)
+    # cmds = ['sys\n']
+    # res = multi_cmd(chan,cmds)
 
     #查出课室的id以及他的ACL名字
+    try:
+        cls_infos = ClassRoom.objects.get(id=int(class_id))
+    except Exception as e:
+        return "数据库错误,无法获取课室资料"
+    
+    ip_net = cls_infos.ip_addr
 
-    chan.send("dis acl ")
+    chan.send("sys\ndis acl %s\n"%cls_infos.ACL)
+    time.sleep(0.5)
+    res = chan.recv(99999).decode()
+    
+    #查看具体最高权限的rule序号
 
-    return HttpResponse("xx")
+    global_deny = re.findall("(?<=rule )\d+(?= deny ip \n)",res)
+    global_permit = re.findall("(?<=rule )\d+(?= permit ip \n)",res)
+    global_deny =  int(global_deny[0]) if global_deny else ''
+    global_permit =  int(global_permit[0]) if global_permit else ''
 
-    #用公用函数获取需要设置的具体分别设置第几条rule规则
+    rule_stu_online = common_matching(cls_infos.ip_addr,res)
+    rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
-    #实在没有办法的话,就统一设置100以后的规则
     rule_list = ['100','101','102']
 
+    permit_rules = ''
+    deny_rules = ''
 
+    chan.send("acl %s\n"%cls_infos.ACL)
 
     for x in range(3):
         #修复模式,假如是异常的话
         #设置开启网络的规则
-        print("rule %s permit ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_end_ip_list[x],network_mask_list[x]))
+        permit_rules += "rule %s permit ip source 192.168.%s.%s 0.0.0.%s\n"%(rule_list[x],ip_net,network_end_ip_list[x],network_mask_list[x])
 
     
     for x in range(3):
         #修复模式,假如是异常的话
         #设置开启网络的规则
-        print("rule %s deny ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_end_ip_list[x],network_mask_list[x]))
+        deny_rules += "rule %s deny ip source 192.168.%s.%s 0.0.0.%s\n"%(rule_list[x],ip_net,network_end_ip_list[x],network_mask_list[x])
 
-    #
+
+#根据开启还是关闭网络来操作
+    if operate == "permit":
+
+        #去除所有断网的语句
+        if global_deny:
+            chan.send("undo rule %s\n"%global_deny)
+        
+        for x in rule_stu_offline:
+            chan.send("undo rule %s\n"%x)
+
+        for x in rule_stu_online:
+            chan.send("undo rule %s\n"%x)
+        
+        for x in permit_rules:
+            chan.send(x)
+
+    else:
+       #去除所有开网的语句
+        if global_permit:
+            chan.send("undo rule %s\n"%global_permit)
+        
+        for x in rule_stu_offline:
+            chan.send("undo rule %s\n"%x)
+
+        for x in rule_stu_online:
+            chan.send("undo rule %s\n"%x)
+        
+        for x in deny_rules:
+            chan.send(x)
+
+    time.sleep(2)
+    res = chan.recv(99999).decode()
+    print(res)
+    print("")
+
+    chan.send("dis acl %s\n"%cls_infos.ACL)
+    time.sleep(0.2)
+    res = chan.recv(9999).decode()
+
+    chan.send("q\nq\nsave\ny\n")
+    time.sleep(0.1)
+    rule_stu_online = common_matching(cls_infos.ip_addr,res)
+    rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
+
+    if operate == "permit":
+        if rule_stu_online:
+            return HttpResponse("信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动刷新"%cls_infos.class_number)
+        
+    else:
+        if rule_stu_offline:
+            return HttpResponse("信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动刷新"%cls_infos.class_number)
+    
+    return HttpResponse("信息返回:%s的网络设置失败,如想再次确认,5秒钟之后自动刷新"%cls_infos.class_number)
+
+
+    #用公用函数获取需要设置的具体分别设置第几条rule规则
+
+    #实在没有办法的话,就统一设置100以后的规则
+    
+
 
 def common_matching(net,acls,operate="permit"):
 
