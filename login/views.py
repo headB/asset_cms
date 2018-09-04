@@ -724,7 +724,7 @@ def network_manager(request):
         ACL_dict['name'] = re.findall("(?<=acl number )\d+",x)[0]
         ACL_dict['rule'] = re.findall("rule.+(?=\n)",x)
         ACL_dict['timer'] = "<span style='color:green'><b>YES</b></span>" if re.findall("time-range",x) else "<span style='color:red'><b>NO</b></span>"
-        ACL_dict['online'] = re.findall("rule.+(?=\n)",x)
+        ACL_dict['online'] = x
         ACL_classification_dict.update({ACL_dict['name']:ACL_dict})
     
     #首先知道当前的教学地点
@@ -745,8 +745,8 @@ def network_manager(request):
 
     for x in class_room_infos:
         x.rules = ACL_classification_dict[str(x.ACL)]
+        x.state =  judge_network_state(ACL_classification_dict[str(x.ACL)]['online'],x.ip_addr)
 
-        
     return render(request,"estimate/network.html",{"acl_infos":class_room_infos})
 
 
@@ -759,24 +759,73 @@ def judge_network_state(acls,network):
     """
 
     #毋庸置疑,必须先定位全局禁止上网的语句的正则语句,这个是全断网,就看位置了
-    global_deny = "rule \d+ deny ip \n"
-    global_permit = "rule \d+ permit ip \n"
-
-    #匹配到局部ip上网
+    #这两个优先级别最高，出现谁，情况都是不一样的。
+    try:
+        global_deny = re.search("(?<=rule )\d+(?= deny ip \n)",acls)
+        global_permit = re.search("(?<=rule )\d+(?= permit ip \n)",acls)
+        #匹配到局部ip上网
+        some_online_rule = re.search("(?<=rule )\d+(?= permit ip source \d+\.\d+\.\d+\.\d+ 0 \n)",acls)
+    except Exception as e:
+        return "请联系网站技术人员,错误01"
 
     #然后设定根据当前的ip段,结合规则,看看符不符合上网规则
     #然后,还带自动纠正功能,排列顺序
-    rule_stu_online = common_matching(network,list)
+    print(common_matching(network,acls))
+    try:
+        rule_stu_online = list(map(int,common_matching(network,acls)))
+    except Exception as e:
+        return "请联系网站技术人员,错误02"
 
     #断网正则匹配
-    rule_stu_offline1 = "rule \d+ deny ip source 192\.168\.%s\.0 0\.0\.0\.127"%network 
-    rule_stu_offline2 = "rule \d+ deny ip source 192\.168\.%s\.64 0\.0\.0\.191"%network 
-    rule_stu_offline3 = "rule \d+ deny ip source 192\.168\.%s\.32 0\.0\.0\.223"%network
-
+    try:
+        rule_stu_offline = list(map(int,common_matching(network,acls,operate="deny")))
+    except Exception as e:
+        return "请联系网站技术人员，错误03"
     #然后又设置一段检测是否有安全设置的acl规则
-    safe_rule = "rule \d+ deny ip destination 192\.168\.0.0 0.0\.255\.255"
+    safe_rule = re.search("(?<=rule )\d+(?= deny ip destination 192\.168\.0.0 0.0\.255\.255)",acls)
 
+    
 
+    #现在关键断不断网，就是看deny和permit是在学生的匹配网段前面还是后面，就知道是否通断网了。
+    #先得出学生的规则是否连续，然后取其第一规则的序号
+    if  rule_stu_online and  rule_stu_offline:
+        return "请联系网站技术人员，错误04"
+
+    deny_all = "<span style='color:red'><b>全部禁网</b></span>"
+    permit_all = "<span style='color:green'><b>全部上网</b></span>"
+    permit_local = "<span style='color:blue'><b>局部上网，有异常</b></span>"
+    deny_local = "<span style='color:blue'><b>局部禁网,有异常</b></span>"
+
+    
+    #先判断是否可以全部上网
+    if not global_deny:
+        if not rule_stu_offline:
+            if rule_stu_online:
+                if all(rule_stu_offline):
+                    return permit_all
+                else:
+                    return permit_local
+            else:
+                return "<span style='color:green'><b>账号密码上网</b></span>"
+        else:
+            if all(rule_stu_offline):
+                return deny_all
+            else:
+                return deny_local
+    else:
+        if rule_stu_online:
+            if all(rule_stu_online):
+                if rule_stu_online[0] < global_deny[0]:
+                    return  permit_all
+                else:
+                    return deny_all
+            else:
+                return permit_local
+        else:
+            return deny_all
+            
+
+    
 
 def set_network(request):
     #然后必须放行服务器段ip
@@ -791,13 +840,13 @@ def set_network(request):
     for x in range(3):
         #修复模式,假如是异常的话
         #设置开启网络的规则
-        print("rule %s permit ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_ip_list,network_mask_list))
+        print("rule %s permit ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_end_ip_list[x],network_mask_list[x]))
 
     
     for x in range(3):
         #修复模式,假如是异常的话
         #设置开启网络的规则
-        print("rule %s deny ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_ip_list,network_mask_list))
+        print("rule %s deny ip source 192.168.%s.0 0.0.0.%s"%(rule_list,network_end_ip_list[x],network_mask_list[x]))
 
     #
 
@@ -814,10 +863,16 @@ def common_matching(net,acls,operate="permit"):
     rules = []
     for x in range(3):
         rule_regex = "(?<=rule )\d+(?= %s ip source 192\.168\.%s\.%s 0\.0\.0\.%s)"%(operate,net,network_end_ip_list[x],network_mask_list[x])
-        rule = re.search(rule_regex,acls)
-        if rule:
-            rules.append(rules)
+        rule = re.findall(rule_regex,acls)
+        rule1 = rule[0] if rule else ''
+        rules.append(rule1)
     
     return rules
     
+def list_element_to_int(list):
+    """
+    :paras :list :传入一组数组，然后要求就是里面的元素都是字符串数据类型的数字
+    """
+    #输入
+    pass
 
