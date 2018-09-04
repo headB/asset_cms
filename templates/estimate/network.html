@@ -2,6 +2,8 @@
 
 {% block body %}
 
+<h3>备注：每次设置网络状态，需要等待5秒更新才能显示最新状态，请留意，并非操作没有成功！</h3>
+
 <table id="network" class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1">
 
     <tbody>
@@ -18,7 +20,7 @@
         <tr>
         <td style="text-align:center">{{ x.class_number }}</td>
         <td style="text-align:center">开网/断网</td>
-        <td style="text-align:center">{{ x.state }}</td>
+        <td style="text-align:center">{{ x.state|safe }}</td>
         <td style="text-align:center">{{ x.rules.timer|safe }}</td>
         <td style="text-align:center"></td>
         </tr>
