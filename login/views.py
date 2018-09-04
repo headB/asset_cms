@@ -4,6 +4,7 @@ import hashlib
 from login.common_func import *
 import re
 
+
 ## 公用变量
 network_end_ip_list = ['0','64','32']
 network_mask_list = ['127','191','223']
@@ -746,6 +747,11 @@ def network_manager(request):
     for x in class_room_infos:
         x.rules = ACL_classification_dict[str(x.ACL)]
         x.state =  judge_network_state(ACL_classification_dict[str(x.ACL)]['online'],x.ip_addr)
+        turn_online = re.findall("全部上网",x.state)
+        if turn_online:
+            x.switch = "offline"
+        else:
+            x.switch = "online"
 
     return render(request,"estimate/network.html",{"acl_infos":class_room_infos})
 
@@ -829,7 +835,7 @@ def judge_network_state(acls,network):
                 if rule_stu_online[0] < global_deny:
                     state = True
         if rule_stu_offline:
-            if x < rule_stu_offline[-1]:
+            if x < rule_stu_offline[-1] and not global_deny:
                 state = True
 
         for y in rule_stu_offline:
@@ -862,15 +868,13 @@ def judge_network_state(acls,network):
     #优先处理上网
 
     if global_permit:
+        
         x = want_to_online(global_permit)
-        if x[0]:
+        if x[0]:      
             if not x[1]:
                 return permit_all
             else:
                 return permit_local
-        else:
-            return deny_all
-
 
     if rule_stu_online:
         x = want_to_online(rule_stu_online[-1])
@@ -881,72 +885,71 @@ def judge_network_state(acls,network):
         
             return permit_local
 
-        else:
-            return deny_all
-
-
-    if global_deny:
-        if want_to_offline(global_deny):
-            return deny_all
+    if not global_deny:
+        if not rule_stu_offline:
+            return "<span style='color:blue'><b>全部凭账号上网</b></span>"
+        
+    return deny_all
     
-    if rule_stu_offline:
-        if want_to_offline(rule_stu_offline[0]):
-            return deny_all
-        else:
-            return deny_local
 
 
-    # #先判断是否可以全部上网
-    # if not global_deny:
-    #     if not rule_stu_offline:
-    #         if rule_stu_online:
-    #             if len(rule_stu_online) == 3:
-    #                 return permit_all
-    #             else:
-    #                 return permit_local
-    #         else:
-    #             return "<span style='color:green'><b>账号密码上网</b></span>"
-    #     else:
-    #         if global_permit:
-    #             if rule_stu_offline[0] < global_permit:
-    #                 #想递归，只是先想想
-    #                 if rule_stu_offline.__len__() == 3:
-    #                     return deny_all
-    #                 else:
-    #                     return deny_local
-    #             else:
-    #                 return permit_all
-
-    #         else:
-    #             if len(rule_stu_offline) == 3:
-    #                 return deny_all
-    #             else:
-    #                 return deny_local
-
-    # else:
-    #     if rule_stu_online:
-    #         if len(rule_stu_online) == 3:
-    #             if rule_stu_online[0] < global_deny:
-    #                 return  permit_all
-    #             else:
-    #                 return deny_all
-    #         else:
-    #             return permit_local
-    #     else:
-    #         return deny_all
             
 
     
 
 def set_network(request):
+    import paramiko
+    import time
+    from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
+
     #然后必须放行服务器段ip
     # :TODO
 
+    #接收get请求,必须的参数是
+    #1.课室的id
+    #2.操作
+
+    class_id = request.GET.get("cls")
+    operate = request.GET.get("operate")
+
+    print(class_id)
+    print(operate)
+
+    operate_verify = re.findall("(permit|deny)",operate)
+    
+
+    #如果参数不完整,直接跳回网络控制页面
+    if not all([class_id,operate]) or not operate_verify:
+        return redirect("/estimate/index/network")
+    
+    
+
+    #创建ssh对象
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+
+
+    ssh.connect(hostname=HOSTNAME,port=22,username=USERNAME,password=PASSWORD,allow_agent=False,look_for_keys=False)
+
+    chan = ssh.invoke_shell()
+    cmds = ['sys\n']
+    res = multi_cmd(chan,cmds)
+
+    print(res)
+
+    #查出课室的id以及他的ACL名字
+
+    chan.send("dis acl ")
+
+    return HttpResponse("xx")
 
     #用公用函数获取需要设置的具体分别设置第几条rule规则
 
     #实在没有办法的话,就统一设置100以后的规则
     rule_list = ['100','101','102']
+
+
 
     for x in range(3):
         #修复模式,假如是异常的话
@@ -990,3 +993,14 @@ def list_element_to_int(list):
     #输入
     pass
 
+def multi_cmd(ssh_object,cmds):
+    import time
+    for x in cmds:
+        ssh_object.send(x)
+        time.sleep(0.5)
+        res = replace_escape(ssh_object.recv(99999).decode())
+        return res
+
+def replace_escape(str):
+
+    return str.replace("---- More ----",'').replace("\x1b[42D",'').replace("  ",'')
