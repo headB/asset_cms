@@ -1011,7 +1011,7 @@ def set_network(request):
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
     success_world = "信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动返回刷新"%cls_infos.class_number
-    fail_world = "信息返回:%s的网络设置失败,如想再次确认,5秒钟之后自动返回刷新"%cls_infos.class_number
+    fail_world = "信息返回:%s的网络设置可能失败了,但系可以5秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
 
     if operate == "permit":
         if rule_stu_online or rule_stu_offline:
