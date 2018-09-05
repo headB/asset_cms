@@ -831,9 +831,11 @@ def judge_network_state(acls,network):
         if global_deny:
             if x < global_deny:
                 state = True
+                return [state,0]
             elif rule_stu_online:
                 if rule_stu_online[0] < global_deny:
                     state = True
+                    
         if rule_stu_offline:
             if x < rule_stu_offline[-1] and not global_deny:
                 state = True
