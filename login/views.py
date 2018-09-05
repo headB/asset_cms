@@ -940,10 +940,13 @@ def set_network(request):
     
     #查看具体最高权限的rule序号
 
-    global_deny = re.findall("(?<=rule )\d+(?= deny ip \n)",res)
-    global_permit = re.findall("(?<=rule )\d+(?= permit ip \n)",res)
+    global_deny = re.findall("(?<=rule )\d+(?= deny ip \()",res)
+    global_permit = re.findall("(?<=rule )\d+(?= permit ip \()",res)
     global_deny =  int(global_deny[0]) if global_deny else ''
     global_permit =  int(global_permit[0]) if global_permit else ''
+
+    # if global_deny and global_permit:
+    #     glo
 
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
@@ -980,8 +983,8 @@ def set_network(request):
         for x in rule_stu_online:
             chan.send("undo rule %s\n"%x)
         
-        for x in permit_rules:
-            chan.send(x)
+
+        chan.send(permit_rules)
 
     else:
        #去除所有开网的语句
@@ -994,19 +997,19 @@ def set_network(request):
         for x in rule_stu_online:
             chan.send("undo rule %s\n"%x)
         
-        for x in deny_rules:
-            chan.send(x)
+        
+        chan.send(deny_rules)
 
     time.sleep(2)
     res = chan.recv(99999).decode()
 
     chan.send("dis acl %s\n"%cls_infos.ACL)
-    time.sleep(0.4)
+    time.sleep(0.6)
     res = chan.recv(9999).decode()
     
 
     chan.send("q\nq\nsave\ny\n")
-    time.sleep(0.5)
+    time.sleep(7)
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
