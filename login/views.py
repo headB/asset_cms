@@ -1001,23 +1001,23 @@ def set_network(request):
     print("")
 
     chan.send("dis acl %s\n"%cls_infos.ACL)
-    time.sleep(0.2)
+    time.sleep(0.4)
     res = chan.recv(9999).decode()
+    print(res)
 
     chan.send("q\nq\nsave\ny\n")
     time.sleep(0.1)
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
+    success_world = "信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动返回刷新"%cls_infos.class_number
+    fail_world = "信息返回:%s的网络设置失败,如想再次确认,5秒钟之后自动返回刷新"%cls_infos.class_number
+
     if operate == "permit":
-        if rule_stu_online:
-            return HttpResponse("信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动刷新"%cls_infos.class_number)
-        
-    else:
-        if rule_stu_offline:
-            return HttpResponse("信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动刷新"%cls_infos.class_number)
+        if rule_stu_online or rule_stu_offline:
+            return render(request,'estimate/fresh.html',{'world':success_world})
     
-    return HttpResponse("信息返回:%s的网络设置失败,如想再次确认,5秒钟之后自动刷新"%cls_infos.class_number)
+    return render(request,'estimate/fresh.html',{'world':fail_world})
 
 
     #用公用函数获取需要设置的具体分别设置第几条rule规则
