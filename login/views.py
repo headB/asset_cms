@@ -920,7 +920,10 @@ def set_network(request):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    ssh.connect(hostname=HOSTNAME,port=22,username=USERNAME,password=PASSWORD,allow_agent=False,look_for_keys=False)
+    try:
+        ssh.connect(hostname=HOSTNAME,port=22,username=USERNAME,password=PASSWORD,allow_agent=False,look_for_keys=False)
+    except Exception as e:
+        return render()
 
     chan = ssh.invoke_shell()
     # cmds = ['sys\n']
@@ -930,7 +933,7 @@ def set_network(request):
     try:
         cls_infos = ClassRoom.objects.get(id=int(class_id))
     except Exception as e:
-        return "数据库错误,无法获取课室资料"
+        return render(request,'estimate/fresh.html',{'world':"出现致命错误，交换机链接失败，请2分钟之后再尝试！或者联系技术人员！"})
     
     ip_net = cls_infos.ip_addr
 
@@ -1009,7 +1012,7 @@ def set_network(request):
     
 
     chan.send("q\nq\nsave\ny\n")
-    time.sleep(2)
+    time.sleep(1)
     chan.close()
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
