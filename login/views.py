@@ -716,7 +716,7 @@ def network_manager(request):
         switcher_cfg = file1.readlines()
     #然后是正则提取ACL规则
     switcher_cfg = "".join(switcher_cfg)
-    acl_list = re.findall("acl number [\s\S]*?#",switcher_cfg)
+    acl_list = re.findall("acl number \d+[\s\S]*?rule.+\n(?! rule)",switcher_cfg)
     #ACL_classification = []
     ACL_classification_dict = {}
     #按分类,保存好规则数据
@@ -743,7 +743,7 @@ def network_manager(request):
 
     ## 尝试循环分类
     #合并两个数据，取合集
-
+    print()
     for x in class_room_infos:
         x.rules = ACL_classification_dict[str(x.ACL)]
         x.state =  judge_network_state(ACL_classification_dict[str(x.ACL)]['online'],x.ip_addr)
@@ -997,16 +997,14 @@ def set_network(request):
 
     time.sleep(2)
     res = chan.recv(99999).decode()
-    print(res)
-    print("")
 
     chan.send("dis acl %s\n"%cls_infos.ACL)
     time.sleep(0.4)
     res = chan.recv(9999).decode()
-    print(res)
+    
 
     chan.send("q\nq\nsave\ny\n")
-    time.sleep(0.1)
+    time.sleep(0.5)
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
