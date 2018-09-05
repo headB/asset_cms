@@ -1000,7 +1000,7 @@ def set_network(request):
         
         chan.send(deny_rules)
 
-    time.sleep(2)
+    time.sleep(2.2)
     res = chan.recv(99999).decode()
 
     chan.send("dis acl %s\n"%cls_infos.ACL)
@@ -1009,7 +1009,8 @@ def set_network(request):
     
 
     chan.send("q\nq\nsave\ny\n")
-    time.sleep(7)
+    time.sleep(2)
+    chan.close()
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
