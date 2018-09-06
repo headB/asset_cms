@@ -1218,7 +1218,7 @@ def reset_encrypt(request):
         if res.status_code != 200:
             return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03,凉凉的")
         
-        return HttpResponse(res.content.decode())
+        return render(request,'estimate/reset_video_code.html',{'content':content['result']['list']})
 
 
         
