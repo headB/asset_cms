@@ -1,0 +1,64 @@
+{%extends 'estimate/base.html' %}
+
+{% block body %}
+
+<h3>请确认好准确的信息再进行操作</h3>
+<script type="text/javascript">
+$(function(){
+
+    $(function(){$("input[type='submit']").click(function(){$(this).hide()})})
+
+})
+</script>
+<form >
+<input type='text' name="key" value="{{ request.GET.key }}" placeholder="请直接输入学生的名字" ><input type="submit" class='btn btn-success' value="點擊搜尋" >
+</form>
+<br><br>
+
+<table id="" class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1">
+
+    <tbody>
+        <tr>
+            <td style="text-align:center" >名字</td>
+            <td style="text-align:center" >身份证号码</td>
+            <td>重置</td>
+            <td style="text-align:center" >课程</td>
+            <td style="text-align:center" >激活码创建时间</td>
+            <td style="text-align:center" >首次激活时间</td>
+            <td style="text-align:center" >剩余播放次数</td>
+            <td style="text-align:center" >状态</td>
+           
+        </tr>
+
+        {% if content %}
+        
+        {% for x in content %}
+        
+        <tr>
+
+            <td>{{ x.identify }}</td>
+            <td>{{ x.user_id }}</td>
+            <td>{% if x.state == 1 %}<a href=""><button class='btn btn-success'>点击申请重置激活码</button></a>{% else %}<span style="color:red"><b>异常，可能已经召回</b></span>{% endif %}</td>            <td>{{ x.course_name }}</td>
+            <td>{{ x.create_time }}</td>
+            <td>{{ x.cer_create_time }}</td>
+            <td>{{ x.left_times }}</td>
+            <td>{% if x.state == 1 %}<span style="color:green"><b>已经激活</b></span>{% else %}<span style="color:red"><b>异常，可能已经召回</b></span>{% endif %}</td>
+           
+            
+
+
+        </tr>
+
+        {% endfor  %}
+       
+        {% else %}
+
+        </tbody>
+        </table>
+
+        <h1>没有找到结果</h1>
+
+        {% endif %}
+
+    {% endblock body %}
+

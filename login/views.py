@@ -920,11 +920,6 @@ class Telnet2Huawei:
         match_world = match_world.encode()
         return self.chan.read_until(match_world).decode()
 
-
-
-
-
-
 def set_network(request):
 
     import time
@@ -1098,3 +1093,136 @@ def multi_cmd(ssh_object,cmds):
 def replace_escape(str):
 
     return str.replace("---- More ----",'').replace("\x1b[42D",'').replace("  ",'')
+
+
+#OK,这里添加新功能，让班主任可以重置学生的加密视频的激活码
+#无非就是使用requests来操作的。
+
+def reset_encrypt(request):
+
+    import requests
+    import urllib
+    from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD
+    import json
+    #数据库设计
+
+    #1.cookie，而且是转码保存
+
+    #1.还有登录人的名字
+    #2.操作时间
+    #3.被操作人的名字
+    #4.班级
+    #
+
+    #公用所需信息
+    """
+    Accept: application/json, text/plain, */*
+    Accept-Encoding: gzip, deflate
+    Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7
+    """
+    request_head_dict = {
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Encoding": "gzip, deflate",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+    "Content-Type":"application/json;charset=UTF-8",
+    }
+
+    cookie_dict = {
+        "token":"t_92d5cefb-d480-4384-99f7-92c65c6573d4",
+    }
+
+
+    
+    def login():
+
+        #登陆验证 #post方法
+        #返回的信息有token，有所有课程的信息
+        
+        #需要的参数
+        #1.evtoken
+        #2.token
+        #3.username
+        #4.password
+        login_url = "http://cer.ieway.cn/api/v1/user/cloginChecked"
+        datas = {"user_name":IEWAY_USERNAME,"user_pwd":IEWAY_PASSWORD,"deviceType":"false"}
+        datas = json.dumps(datas)
+
+        res = requests.post(login_url,data=datas,headers=request_head_dict)
+
+        return res
+
+
+    def search(key):
+        #get方法
+        reqest_url = "http://cer.ieway.cn/api/v1/user/mng/course/list/jsonall"
+
+        #1.key关键字 key
+        #2.course = -1 估计是全部课程都查询
+        #3.active=1
+        #4.unActive=1
+
+        if not key:
+            return False
+
+        key = urllib.parse.quote(key)
+
+        search_url = 'http://cer.ieway.cn/api/v1/user/mng/certificate/getCrtList?active=1&course_id=-1&key=%s&page=1&pageSize=40&unActive=1'%key
+
+        res = requests.get(search_url,headers={"token":token})
+
+        return res
+
+    #接收参数
+    key = request.GET.get('key')
+
+    if not key:
+
+        return render(request,'estimate/reset_video_code.html')
+
+    #首先去数据尝试获取数据库中的token数值
+    from .models import IewayCookie
+    token_object = IewayCookie.objects.get(id=1)
+    token = token_object.cookie_value
+    
+    try:
+        res = search(key)
+    except Exception as e:
+        return HttpResponse("尝试与IEWAY获取数据，出现异常，请联系程序猿，或者攻城狮,错误01")
+
+    if res.status_code == 200:
+        content = json.loads(res.content.decode())
+        if content['errcode'] == 0:
+            
+            return render(request,'estimate/reset_video_code.html',{'content':content['result']['list']})
+
+    response = login()
+    if response.status_code != 200:
+        return HttpResponse("视频激活管理后台登陆失败！请联系程序猿，或者攻城狮,错误02")
+    else:
+        #格式化json数据
+        content = json.loads(response.content.decode())
+
+        #首先查询是否存在错误
+        if content['errcode'] != 0:
+            return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03,凉凉的")
+
+        #获取token数值
+        token = content['result']['token']
+        #保存到数据库
+        token_object.cookie_value = token
+        token_object.save()
+
+        #然后尝试才去获取信息
+        res = search(key)
+
+        if res.status_code != 200:
+            return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03,凉凉的")
+        
+        return HttpResponse(res.content.decode())
+
+
+        
+
+
+
+        

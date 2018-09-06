@@ -20,5 +20,6 @@ urlpatterns = [
     path("admin_setting/",views.admin_setting),
     path("kill/",views.clean_all_node),
     path("index/network/",views.network_manager),
-    path("index/set_network/",views.set_network)
+    path("index/set_network/",views.set_network),
+    path("index/reset_video_code/",views.reset_encrypt),
 ]

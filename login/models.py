@@ -64,3 +64,7 @@ class FrontEndShow(models.Model):
     ip = models.GenericIPAddressField()
     port = models.IntegerField()
     location = models.ForeignKey(Location,on_delete=models.PROTECT,default=1)
+
+#cookie的保存
+class IewayCookie(models.Model):
+    cookie_value = models.CharField(max_length=200)
