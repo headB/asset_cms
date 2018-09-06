@@ -1040,8 +1040,8 @@ def set_network(request):
     else:
         operate_name = "断网"
 
-    success_world = "信息返回:%s的%s设置成功,如想再次确认,5秒钟之后自动返回刷新"%(cls_infos.class_number,operate_name)
-    fail_world = "信息返回:%s的网络设置可能失败了,但系可以5秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
+    success_world = "信息反饋:%s的%s设置成功,如想再次确认,5秒钟之后自动返回刷新"%(cls_infos.class_number,operate_name)
+    fail_world = "信息反饋:%s的网络设置可能失败了,但系可以5秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
 
     if operate == "permit" and rule_stu_online:
         return render(request,'estimate/fresh.html',{'world':success_world})
