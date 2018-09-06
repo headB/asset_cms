@@ -893,11 +893,41 @@ def judge_network_state(acls,network):
         
     return deny_all
     
+#自己尝试定义一个函数，免得每次自己都得手动去转换encode和decode，其实decode还可以，但是encode真的很烦啊。
+#不过想想，应该也是为了避免中文问题？
+
+#写一个派生类啊！
+
+class Telnet2Huawei:
+
+    def __init__(self):
+        import telnetlib
+        from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
+        USERNAME = (USERNAME+"\n").encode()
+        PASSWORD = (PASSWORD+"\n").encode()
+        self.chan = telnetlib.Telnet(host=HOSTNAME,port=23,timeout=5)
+        self.chan.read_until(b'Username:')  
+        self.chan.write(USERNAME)
+        self.chan.read_until(b'Password:')  
+        self.chan.write(PASSWORD)
+        self.chan.write(b"sys\n")
+
+    def send(self,command):
+        command = command.encode()
+        self.chan.write(command)
+    
+    def recv(self,match_world):
+        match_world = match_world.encode()
+        return self.chan.read_until(match_world).decode()
+
+
+
+
+
 
 def set_network(request):
-    import paramiko
+
     import time
-    from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
     from .models import ClassRoom
 
     #然后必须放行服务器段ip
@@ -916,30 +946,22 @@ def set_network(request):
     if not all([class_id,operate]) or not operate_verify:
         return redirect("/estimate/index/network")
     
-    #创建ssh对象
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
     try:
-        ssh.connect(hostname=HOSTNAME,port=22,username=USERNAME,password=PASSWORD,allow_agent=False,look_for_keys=False)
+        chan = Telnet2Huawei()
     except Exception as e:
-        return render()
-
-    chan = ssh.invoke_shell()
-    # cmds = ['sys\n']
-    # res = multi_cmd(chan,cmds)
+        return render(request,'estimate/fresh.html',{'world':"出现致命错误，交换机链接失败，请2分钟之后再尝试！或者联系技术人员！"})
 
     #查出课室的id以及他的ACL名字
     try:
         cls_infos = ClassRoom.objects.get(id=int(class_id))
     except Exception as e:
-        return render(request,'estimate/fresh.html',{'world':"出现致命错误，交换机链接失败，请2分钟之后再尝试！或者联系技术人员！"})
+        return render(request,'estimate/fresh.html',{'world':"无法获取课室信息！或者联系技术人员！"})
     
     ip_net = cls_infos.ip_addr
 
-    chan.send("sys\ndis acl %s\n"%cls_infos.ACL)
-    time.sleep(0.5)
-    res = chan.recv(99999).decode()
+    chan.send("dis acl %s\n520su\n"%cls_infos.ACL)
+
+    res = chan.recv("]520su")
     
     #查看具体最高权限的rule序号
 
@@ -948,8 +970,6 @@ def set_network(request):
     global_deny =  int(global_deny[0]) if global_deny else ''
     global_permit =  int(global_permit[0]) if global_permit else ''
 
-    # if global_deny and global_permit:
-    #     glo
 
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
@@ -986,7 +1006,6 @@ def set_network(request):
         for x in rule_stu_online:
             chan.send("undo rule %s\n"%x)
         
-
         chan.send(permit_rules)
 
     else:
@@ -998,31 +1017,37 @@ def set_network(request):
             chan.send("undo rule %s\n"%x)
 
         for x in rule_stu_online:
-            chan.send("undo rule %s\n"%x)
-        
+            chan.send("undo rule %s\n"%x)  
         
         chan.send(deny_rules)
 
-    time.sleep(2.6)
-    res = chan.recv(99999).decode()
-
-    chan.send("dis acl %s\n"%cls_infos.ACL)
-    time.sleep(0.7)
-    res = chan.recv(9999).decode()
+    chan.send("520su\n")
+    #在这截留以上所有的操作，并且打印，查看过程！
+    res = chan.recv("]520su")
     
-
+    chan.send("dis acl %s\n520su\n"%cls_infos.ACL)
+    
+    res = chan.recv("]520su")
+    
     chan.send("q\nq\nsave\ny\n")
-    time.sleep(5)
-    chan.close()
+    time.sleep(1.5)
+    chan.chan.close()
     rule_stu_online = common_matching(cls_infos.ip_addr,res)
     rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
-    success_world = "信息返回:%s的网络设置成功,如想再次确认,5秒钟之后自动返回刷新"%cls_infos.class_number
+    if operate == "permit":
+        operate_name = "开网"
+    else:
+        operate_name = "断网"
+
+    success_world = "信息返回:%s的%s设置成功,如想再次确认,5秒钟之后自动返回刷新"%(cls_infos.class_number,operate_name)
     fail_world = "信息返回:%s的网络设置可能失败了,但系可以5秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
 
-    if operate == "permit":
-        if rule_stu_online or rule_stu_offline:
-            return render(request,'estimate/fresh.html',{'world':success_world})
+    if operate == "permit" and rule_stu_online:
+        return render(request,'estimate/fresh.html',{'world':success_world})
+    
+    elif operate == "deny" and rule_stu_offline:
+        return render(request,'estimate/fresh.html',{'world':success_world})
     
     return render(request,'estimate/fresh.html',{'world':fail_world})
 
