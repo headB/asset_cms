@@ -9,7 +9,7 @@ from asset_cms.settings import SECRET_KEY
 #OK！采用新技术了。采用类的话，可以继承很多的新功能的啦。！
 from django.views.generic import View
 from .models import Admin,IewayCookie,FrontEndShow
-from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD,EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER
+from asset_cms.settings import EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER
 import requests
 import json
 
@@ -1110,9 +1110,9 @@ def replace_escape(str):
 
 def reset_encrypt(request):
 
+    from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD
     import requests
     import urllib
-    from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD
     import json
     #数据库设计
 
@@ -1201,6 +1201,7 @@ def reset_encrypt(request):
 
 #设置一个尝试去重新登陆ieway的函数  
 def try_login_ieway():
+    from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD
     import requests
     import json
     request_head_dict = {
