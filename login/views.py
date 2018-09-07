@@ -1197,14 +1197,14 @@ def reset_encrypt(request):
 
     response = login()
     if response.status_code != 200:
-        return HttpResponse("视频激活管理后台登陆失败！请联系程序猿，或者攻城狮,错误02")
+        return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误02---,5秒后自动返回",'forward':'/estimate/index/'})
     else:
         #格式化json数据
         content = json.loads(response.content.decode())
 
         #首先查询是否存在错误
         if content['errcode'] != 0:
-            return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03,凉凉的")
+            return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03---,5秒后自动返回",'forward':'/estimate/index/'})
 
         #获取token数值
         token = content['result']['token']
@@ -1213,14 +1213,16 @@ def reset_encrypt(request):
         token_object.save()
 
         #然后尝试才去获取信息
-        res = search(key)
-
+        try:
+            res = search(key)
+        except Exception as e:
+            return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误04",'forward':'/estimate/index/'})
         if res.status_code == 200:
             content = res.content.decode()
             if content['errcode'] == 0:
                 return render(request,'estimate/reset_video_code.html',{'content':content['result']['list']})
         else:
-            return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误04,凉凉的")
+            return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误05",'forward':'/estimate/index/'})
         
         
 

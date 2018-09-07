@@ -12,7 +12,7 @@
     
     function tiaozhuan(){
         setTimeout(function(){
-            window.location.href="/estimate/index/network";
+            window.location.href="{% if forward %}{{ forward }}{% else %}/estimate/index/network{% endif %}";
         },5000)
     }
 
