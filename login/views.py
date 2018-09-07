@@ -1405,7 +1405,7 @@ class SendResetVideoCode(View):
                 print(e)
                 email_content += "<br><center><h3>新的激活码已经生成,但是,召回%s的激活码失败</h3></center>"%username
 
-                send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,'lizhixuan@520it.com'],html_message=email_content)
+                send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER],html_message=email_content)
                 return HttpResponse("召回%s的激活码失败,但是%s同学的新激活码已经生成,这是激活码%s,请联系管理员删除旧的激活码"%(username,username,active_code))
                 return render(request,'estimate/fresh.html',{"world":"重置成功","forward":"/estimate/index/"})
 
@@ -1415,7 +1415,7 @@ class SendResetVideoCode(View):
 
 
             
-            send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,'lizhixuan@520it.com'],html_message=email_content)
+            send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER],html_message=email_content)
             return render(request,'estimate/fresh.html',{"world":"重置操作完成,激活码已经发送到你的邮箱,是否存在异常请查看邮件说明","forward":"/estimate/index/"})
             
             #获取学生的信息
