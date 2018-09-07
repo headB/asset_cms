@@ -22,4 +22,5 @@ urlpatterns = [
     path("index/network/",views.network_manager),
     path("index/set_network/",views.set_network),
     path("index/reset_video_code/",views.reset_encrypt),
+    path("index/reset_video_code_send/",views.SendResetVideoCode.as_view()),
 ]

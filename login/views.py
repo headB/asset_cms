@@ -3,6 +3,13 @@ from django.http import JsonResponse,StreamingHttpResponse,FileResponse
 import hashlib
 from login.common_func import *
 import re
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import SignatureExpired
+from asset_cms.settings import SECRET_KEY
+#OK！采用新技术了。采用类的话，可以继承很多的新功能的啦。！
+from django.views.generic import View
+from .models import Admin,IewayCookie
+from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD
 
 
 ## 公用变量
@@ -1114,44 +1121,6 @@ def reset_encrypt(request):
     #4.班级
     #
 
-    #公用所需信息
-    """
-    Accept: application/json, text/plain, */*
-    Accept-Encoding: gzip, deflate
-    Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7
-    """
-    request_head_dict = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Encoding": "gzip, deflate",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-    "Content-Type":"application/json;charset=UTF-8",
-    }
-
-    cookie_dict = {
-        "token":"t_92d5cefb-d480-4384-99f7-92c65c6573d4",
-    }
-
-
-    
-    def login():
-
-        #登陆验证 #post方法
-        #返回的信息有token，有所有课程的信息
-        
-        #需要的参数
-        #1.evtoken
-        #2.token
-        #3.username
-        #4.password
-        login_url = "http://cer.ieway.cn/api/v1/user/cloginChecked"
-        datas = {"user_name":IEWAY_USERNAME,"user_pwd":IEWAY_PASSWORD,"deviceType":"false"}
-        datas = json.dumps(datas)
-
-        res = requests.post(login_url,data=datas,headers=request_head_dict)
-
-        return res
-
-
     def search(key):
         #get方法
         reqest_url = "http://cer.ieway.cn/api/v1/user/mng/course/list/jsonall"
@@ -1195,7 +1164,7 @@ def reset_encrypt(request):
             
             return render(request,'estimate/reset_video_code.html',{'content':content['result']['list']})
 
-    response = login()
+    response = try_login_ieway()
     if response.status_code != 200:
         return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误02---,5秒后自动返回",'forward':'/estimate/index/'})
     else:
@@ -1206,11 +1175,11 @@ def reset_encrypt(request):
         if content['errcode'] != 0:
             return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03---,5秒后自动返回",'forward':'/estimate/index/'})
 
-        #获取token数值
-        token = content['result']['token']
-        #保存到数据库
-        token_object.cookie_value = token
-        token_object.save()
+        # #获取token数值
+        # token = content['result']['token']
+        # #保存到数据库
+        # token_object.cookie_value = token
+        # token_object.save()
 
         #然后尝试才去获取信息
         try:
@@ -1225,9 +1194,216 @@ def reset_encrypt(request):
             return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误05",'forward':'/estimate/index/'})
         
     return render(request,'estimate/fresh.html',{'world':"请再尝试一下重新登陆,5秒后自动返回，错误06",'forward':'/estimate/index/'})
-  
+
+#设置一个尝试去重新登陆ieway的函数  
+def try_login_ieway():
+    import requests
+    import json
+    request_head_dict = {
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Encoding": "gzip, deflate",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+    "Content-Type":"application/json;charset=UTF-8",
+    }
+        #登陆验证 #post方法
+        #返回的信息有token，有所有课程的信息
+     
+        #需要的参数
+        #1.evtoken
+        #2.token
+        #3.username
+        #4.password
+    login_url = "http://cer.ieway.cn/api/v1/user/cloginChecked"
+    datas = {"user_name":IEWAY_USERNAME,"user_pwd":IEWAY_PASSWORD,"deviceType":"false"}
+    datas = json.dumps(datas)
+
+    res = requests.post(login_url,data=datas,headers=request_head_dict)
+
+    token = res['result']['token']
+    token_object = IewayCookie.objects.get(id=1)
+    token_object.cookie_value = token
+    token_object.save()
+
+    return res
 
 
+#设置一个专门用于重置视频激活码的函数
+def try_to_create(username,id,course_id_string_type):
+    #值的只注意的事，这里涉及两步走
+    #1.首先是，哇哇，原子性啊。不不不。这个没得原子性啊～。
+    #不过保险一点，还是先创建新的激活码，然后再召回以前的激活码，这样会
+
+    #获取token获取
+    import datetime
+    import requests
+    try:
+        token = IewayCookie.objects.get(id=1)
+    except Exception as e:
+        return False
+
+    request_head_dict = {
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Encoding": "gzip, deflate",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+    "Content-Type":"application/json;charset=UTF-8",
+    "Origin": "http://cer.ieway.cn",
+    "Referer": "http://cer.ieway.cn/cer",
+    "cookie":token,
+    }
+
+    #创建激活码地址 POST方法
+    #参数，json格式
+    create_code_url = "http://cer.ieway.cn/api/v1/user/mng/certificate/insert"
+
+    endtime = (datetime.datetime.now()+datetime.timedelta(days=1100)).strftime("%Y-%m-%d %H:%M:%S")
+
+    parameter_dict = {"identify":username,"user_id":id,"course_id":[course_id_string_type],"end_time":endtime,"total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
+
+    # {"identify":"黎智煊-测试-重置系统","user_id":"9527","course_id":["2999"],"end_time":"2021-09-07 17:36:16","total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
+    try:
+        res = requests.post(create_code_url,parameter_dict,headers=request_head_dict)
+    except Exception as e:
+        return False
+
+
+    #如果成功的话，会返回errcode:0
+    return res
+    #设置成功之后，发送邮件，到三个人的邮箱里面
+
+def try_to_destory():
+
+    pass
+
+class SendResetVideoCode(View):
+
+    def get(self,request):
+ 
+        active_code = request.GET.get("nizhidaowojiangmiesuanniying")
+
+        #如果成功获取到激活码，首先尝试解密
+        if active_code:
+            #进行解密
+            active_decode = Serializer(SECRET_KEY,900)
+            try:
+
+                #尝试接收参数
+                # username = request.
+
+                code = active_decode.loads(active_code)
+                if code['confirm'] != "Canton_foshan_strict":
+                    return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误01",'forward':'/estimate/index/'})
+            except Exception as e:
+                print(e)
+                return render(request,'estimate/fresh.html',{'world':"重置失败，考虑一下是不是超过15分钟了，稳程序猿吧，毕竟是他们开发的，错误02",'forward':'/estimate/index/','timer':'1000'})
+        
+            #首先尝试解析出本次应该重置的学生的信息先。
+            try:
+                username = code['username']
+                id = code['id']
+                course_name = code['course_name']
+                course_id = code['course_id']
+
+            except Exception as e:
+                return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误03",'forward':'/estimate/index/'})
+            
+            #然后就是不可描述的requests请求了。不不。还有一个发送功能。不过这个不难。！不过还是得接收学生的名字，学科，学科id，身份证啊。
+            #对了啦。就是把这些信息封装到json里面就可以的啦。！！
+            print(code)
+
+            #先创建，后召回激活码
+            import json
+            try:
+                res = try_to_create(username,id,str(course_id))
+                response = json.loads(res.content.decode())
+                #然后尝试保存新的激活码
+                active_code = response['result']['l']
+            except Exception as e:
+                try:
+                    try_login_ieway()
+                    res = try_to_create(username,id,str(course_id))
+                    response = json.loads(res.content.decode())
+                    #然后尝试保存新的激活码
+                    active_code = response['result']['l']
+                except Exception as e:
+                    return render(request,'estimate/fresh.html',{'world':"出现严重问题，获取token失败或者无法创建激活码，错误01",'forward':'/estimate/index/','timer':'15000'})
+
+            #成功获取了激活码之后，就可以准备去毁灭，召回激活码了，恩恩，看完如何毁灭先.
+            
+
+            #书写代码
+
+            #直接是传递激活码和ID get方法
+            # {"id":64792,"code":"16190-3480-42E6-C894-1D55"}
+                
+                
+                
+            #如果没有保存的话，就可以获取到新的激活码的
+          
+
+            return render(request,'estimate/fresh.html',{'world':"重置成功",'forward':'/estimate/index/'})
+        
+        #获取学生的信息
+        
+        #名字
+        #身份证
+        #课程名称
+        try:           
+            username = request.GET['username']
+            id = request.GET['id']
+            course_id = request.GET['course_id']
+            course_name = request.GET['course_name']
+        except Exception as e:
+            return render(request,'estimate/fresh.html',{'world':'学生信息不完整！!','forward':'/estimate/index/','timer':'2000'})
+
+
+
+        #尝试获取重置授权码，如果存在，并且是匹配的话，就返回激活码信息，这里的激活码可以不用保存到数据库，因为里面就自带有时效了。
+        #OK！现在引入新的激活码验证码机制
+        #不过这里有时间的话，还是建议加以限制一下。！
+        
+        #加密随机码 有时效性的
+        #15分钟内有效
+        random_code = Serializer(SECRET_KEY,900)
+        user_id = "Canton_foshan_strict"
+        token = random_code.dumps({"confirm":user_id,'username':username,'id':id,'course_name':course_name})
+        token = token.decode()
+
+        #发送邮件
+        from django.core.mail import send_mail
+
+        #从当前的session获取用户的id，然后再尝试获取邮箱地址
+        uid = request.session.get("uid")
+
+        if not uid:
+            return render(request,'estimate/fresh.html',{'world':'请先登陆!','forward':'/estimate/index/','timer':'2000'})
+
+        try:
+            email_info = Admin.objects.get(id=uid)
+        except Exception as e:
+            return HttpResponse("查询用户数据异常，请联系馬騮！错误01")
+
+        email = email_info.email
+
+        #待发送的文本
+        html_message = "<center><p>点击正式申请重置，这个过程会将该学生的原有的激活码,并且重新申请一下视频激活码，每一个激活码都需要一定的费用，请查看学生是否真的有需要</p><p>另外一点，一旦获得新的视频激活码，将自动发送一份邮箱告知任小龙老师，以作备份</p></center>"
+
+        #追加学生信息
+        student_info  = "<center><br><br>请再次确认学生的信息<br>名字:%s<br>身份证:%s<br>课程:%s<br></center>"%(username,id,course_name)
+
+        #然后追加token数值
+        active_url = "<br><br><center><a href=\"http://gz.520langma.com:82/estimate/index/reset_video_code_send/?nizhidaowojiangmiesuanniying=%s\" >点击我就对了(唔好理，总之好犀利，明唔明)<a></center>"%token
+
+        html_message += active_url
+
+        html_message += student_info
+        #是啊，邮件还得兼顾内容问题
+        send_mail("重置视频激活码申请","from beetle tell","lizhixuan@wolfcode.cn",[email,],html_message=html_message)
+
+        
+        #设置一定的验证机制
+
+
+        return render(request,'estimate/fresh.html',{'world':'重置视频激活码,发送你的邮箱成功，请查查看你的邮箱，10秒后自动返回首页!','forward':'/estimate/index/','timer':'10000'})
         
 
 
