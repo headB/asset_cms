@@ -1224,7 +1224,8 @@ def reset_encrypt(request):
         else:
             return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误05",'forward':'/estimate/index/'})
         
-        
+    return render(request,'estimate/fresh.html',{'world':"请再尝试一下重新登陆,5秒后自动返回，错误06",'forward':'/estimate/index/'})
+  
 
 
         
