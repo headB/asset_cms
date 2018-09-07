@@ -47,7 +47,7 @@ $(function(){
             <td>{{ forloop.counter }}</td>
             <td>{{ x.identify }}</td>
             <td>{{ x.user_id }}</td>
-            <td>{% if x.state == 1 %}<a href="http://gz.520langma.com:82/estimate/index/reset_video_code_send/?username={{ x.identify }}&id={{ x.user_id }}&course_name={{ x.course_name }}&course_id={{ x.course_id }}"><button class='btn btn-success'>点击申请重置激活码</button></a>{% else %}<span style="color:red"><b>异常，可能已经召回</b></span>{% endif %}</td>            <td>{{ x.course_name }}</td>
+            <td>{% if x.state == 1 %}<a href="http://gz.520langma.com:82/estimate/index/reset_video_code_send/?username={{ x.identify }}&id={{ x.user_id }}&course_name={{ x.course_name }}&course_id={{ x.course_id }}&code={{ x.code }}&uid={{ x.id }}&applicant={{ applicant }}"><button class='btn btn-success'>点击申请重置激活码</button></a>{% else %}<a href="http://gz.520langma.com:82/estimate/index/reset_video_code_send/?username={{ x.identify }}&id={{ x.user_id }}&course_name={{ x.course_name }}&course_id={{ x.course_id }}&code={{ x.code }}&uid={{ x.id }}&applicant={{ applicant }}"><button class='btn btn-success'>点击申请重置激活码</button></a>{% endif %}</td>            <td>{{ x.course_name }}</td>
             <td>{{ x.create_time }}</td>
             <td>{{ x.cer_create_time }}</td>
             <td>{{ x.left_times }}</td>
