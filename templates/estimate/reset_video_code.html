@@ -3,6 +3,8 @@
 {% block body %}
 
 <h3>请确认好准确的信息再进行操作</h3>
+<h3>每次至多列出40个结果</h3>
+<br>
 <script type="text/javascript">
 $(function(){
 
@@ -19,6 +21,7 @@ $(function(){
 
     <tbody>
         <tr>
+            <td>序号</td>
             <td style="text-align:center" >名字</td>
             <td style="text-align:center" >身份证号码</td>
             <td>重置</td>
@@ -35,7 +38,7 @@ $(function(){
         {% for x in content %}
         
         <tr>
-
+            <td>{{ forloop.counter }}</td>
             <td>{{ x.identify }}</td>
             <td>{{ x.user_id }}</td>
             <td>{% if x.state == 1 %}<a href=""><button class='btn btn-success'>点击申请重置激活码</button></a>{% else %}<span style="color:red"><b>异常，可能已经召回</b></span>{% endif %}</td>            <td>{{ x.course_name }}</td>
@@ -50,7 +53,8 @@ $(function(){
         </tr>
 
         {% endfor  %}
-       
+        </tbody>
+        </table>
         {% else %}
 
         </tbody>

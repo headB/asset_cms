@@ -1215,10 +1215,14 @@ def reset_encrypt(request):
         #然后尝试才去获取信息
         res = search(key)
 
-        if res.status_code != 200:
-            return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误03,凉凉的")
+        if res.status_code == 200:
+            content = res.content.decode()
+            if content['errcode'] == 0:
+                return render(request,'estimate/reset_video_code.html',{'content':content['result']['list']})
+        else:
+            return HttpResponse("第二次尝试登陆失败！请联系程序猿，或者攻城狮,错误04,凉凉的")
         
-        return render(request,'estimate/reset_video_code.html',{'content':content['result']['list']})
+        
 
 
         
