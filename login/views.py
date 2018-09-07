@@ -8,9 +8,10 @@ from itsdangerous import SignatureExpired
 from asset_cms.settings import SECRET_KEY
 #OK！采用新技术了。采用类的话，可以继承很多的新功能的啦。！
 from django.views.generic import View
-from .models import Admin,IewayCookie
+from .models import Admin,IewayCookie,FrontEndShow
 from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD,EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER
 import requests
+import json
 
 
 
@@ -1240,33 +1241,34 @@ def try_to_create(username,id,course_id_string_type):
     import datetime
     import requests
     try:
-        token = IewayCookie.objects.get(id=1)
+        token1 = IewayCookie.objects.get(id=1)
     except Exception as e:
         return False
 
-    token = 'token='+token
+    token = 'token='+token1.cookie_value
 
     request_head_dict = {
     "Accept": "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate",
     "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
     "Content-Type":"application/json;charset=UTF-8",
-    "Origin": "http://cer.ieway.cn",
-    "Referer": "http://cer.ieway.cn/cer",
     "cookie":token,
     }
-
+    
     #创建激活码地址 POST方法
     #参数，json格式
     create_code_url = "http://cer.ieway.cn/api/v1/user/mng/certificate/insert"
 
     endtime = (datetime.datetime.now()+datetime.timedelta(days=1100)).strftime("%Y-%m-%d %H:%M:%S")
 
-    parameter_dict = {"identify":username,"user_id":id,"course_id":[course_id_string_type],"end_time":endtime,"total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
-
+    parameter_dict = {"identify":username,"user_id":id,"course_id":["%s"%course_id_string_type],"end_time":endtime,"total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
+    datas = json.dumps(parameter_dict)
+    
     # {"identify":"黎智煊-测试-重置系统","user_id":"9527","course_id":["2999"],"end_time":"2021-09-07 17:36:16","total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
     try:
-        res = requests.post(create_code_url,parameter_dict,headers=request_head_dict)
+        
+        res = requests.post(create_code_url,data=datas,headers=request_head_dict)
+        
     except Exception as e:
         return False
 
@@ -1286,15 +1288,16 @@ def try_to_destory(user_id,activate_code):
 
     token = IewayCookie.objects.get(id=1)
 
+
     #将token追加到header中
 
-    request_head_dict.update({'cookie':'token=%s'%token})
+    request_head_dict.update({'cookie':'token=%s'%token.cookie_value})
 
     url = "http://cer.ieway.cn/api/v1/user/mng/certificate/sendToBlack"
 
     data = {'id':user_id,'code':activate_code}
-
-    res = requests.get(url,data=data,headers=request_head_dict)
+    data = json.dumps(data)
+    res = requests.post(url,data=data,headers=request_head_dict)
 
     return res
 
@@ -1303,11 +1306,20 @@ def try_to_destory(user_id,activate_code):
 class SendResetVideoCode(View):
 
     def get(self,request):
+        #查询是否是广州的主机,wolfcode的
+        locations = FrontEndShow.objects.get(id=2)
+        if locations.location.id != 1:
+            return render(request,'estimate/fresh.html',{'world':"请登录广州的评分系统进行操作，错误01",'forward':'/estimate/index/'})
+
  
         active_code = request.GET.get("nizhidaowojiangmiesuanniying")
 
         #如果成功获取到激活码，首先尝试解密
         if active_code:
+
+            
+
+
             #进行解密
             active_decode = Serializer(SECRET_KEY,900)
             try:
@@ -1315,25 +1327,29 @@ class SendResetVideoCode(View):
                 #尝试接收参数
                 # username = request.
 
-                code = active_decode.loads(active_code)
+                code1 = active_decode.loads(active_code)
+                code = json.loads(code1)
                 if code['confirm'] != "Canton_foshan_strict":
                     return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误01",'forward':'/estimate/index/'})
             except Exception as e:
-                print(e)
+                
                 return render(request,'estimate/fresh.html',{'world':"重置失败，考虑一下是不是超过15分钟了，稳程序猿吧，毕竟是他们开发的，错误02",'forward':'/estimate/index/','timer':'1000'})
         
             #首先尝试解析出本次应该重置的学生的信息先。
             try:
+        
                 username = code['username']
                 id = code['id']
                 course_name = code['course_name']
                 course_id = code['course_id']
                 uid = code['uid']
-                code = code['code']
+                code1 = code['code']
                 applicant = code['applicant']
 
+                code = code1
+
             except Exception as e:
-                print(e)
+                    
                 return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误03",'forward':'/estimate/index/'})
             
             #然后就是不可描述的requests请求了。不不。还有一个发送功能。不过这个不难。！不过还是得接收学生的名字，学科，学科id，身份证啊。
@@ -1341,25 +1357,25 @@ class SendResetVideoCode(View):
             
 
             #先创建，后召回激活码
-            import json
-            # try:
-            #     res = try_to_create(username,id,str(course_id))
-            #     response = json.loads(res.content.decode())
-            #     #然后尝试保存新的激活码
-            #     active_code = response['result']['l']
-            # except Exception as e:
-            #     try:
-            #         try_login_ieway()
-            #         res = try_to_create(username,id,str(course_id))
-            #         response = json.loads(res.content.decode())
-            #         #然后尝试保存新的激活码
-            #         active_code = response['result']['l']
-            #     except Exception as e:
-            #         return render(request,'estimate/fresh.html',{'world':"出现严重问题，获取token失败或者无法创建激活码，错误01",'forward':'/estimate/index/','timer':'15000'})
+            
+            try:
+                res = try_to_create(username,id,str(course_id))
+                response = json.loads(res.content.decode())
+            
+            #然后尝试保存新的激活码
+                active_code = response['result']['l']
+            except Exception as e:
+                try:
+                    try_login_ieway()
+                    res = try_to_create(username,id,str(course_id))
+                    response = json.loads(res.content.decode())
+                    #然后尝试保存新的激活码
+                    active_code = response['result']['l']
+                except Exception as e:
+                    return render(request,'estimate/fresh.html',{'world':"出现严重问题，获取token失败或者无法创建激活码，错误01",'forward':'/estimate/index/','timer':'15000'})
 
             #成功获取了激活码之后，就可以准备去毁灭，召回激活码了，恩恩，看完如何毁灭先.
             
-            active_code = 'xxx'
             #书写代码
             from django.core.mail import send_mail
 
@@ -1375,28 +1391,32 @@ class SendResetVideoCode(View):
 
             #直接是传递激活码和ID get方法
             # {"id":64792,"code":"16190-3480-42E6-C894-1D55"}
-
+            
             #尝试去召回激活码
             try:   
-                try_to_destory(uid,code)
+                re = try_to_destory(uid,code)
 
+                re1 = json.loads(re.content.decode())
                 
+                if re1['errcode'] != 0:
+                    email_content += "<br><center><h3>新的激活码已经生成,但是,召回%s的激活码失败</h3></center>"%username
 
             except Exception as e:
-
-                email_content += "<br><center><h3>新的激活码已经生成</h3></center>"
+                print(e)
+                email_content += "<br><center><h3>新的激活码已经生成,但是,召回%s的激活码失败</h3></center>"%username
 
                 send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,'lizhixuan@520it.com'],html_message=email_content)
                 return HttpResponse("召回%s的激活码失败,但是%s同学的新激活码已经生成,这是激活码%s,请联系管理员删除旧的激活码"%(username,username,active_code))
-                # return render(request,'estimate/fresh.html',{"world":"重置成功","forward":"/estimate/index/"})
+                return render(request,'estimate/fresh.html',{"world":"重置成功","forward":"/estimate/index/"})
 
             #如果没有保存的话，就可以获取到新的激活码的
 
             #发送邮箱
 
+
             
             send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,'lizhixuan@520it.com'],html_message=email_content)
-            return render(request,'estimate/fresh.html',{"world":"重置成功,激活码已经发送到你的邮箱","forward":"/estimate/index/"})
+            return render(request,'estimate/fresh.html',{"world":"重置操作完成,激活码已经发送到你的邮箱,是否存在异常请查看邮件说明","forward":"/estimate/index/"})
             
             #获取学生的信息
             
@@ -1424,7 +1444,9 @@ class SendResetVideoCode(View):
         #15分钟内有效
         random_code = Serializer(SECRET_KEY,900)
         user_id = "Canton_foshan_strict"
-        token = random_code.dumps({"confirm":user_id,"username":username,"id":id,"course_name":course_name,"uid":uid,"course_id":course_id,"code":code,"applicant":applicant})
+        x1 = {"confirm":user_id,"username":username,"id":id,"course_name":course_name,"uid":uid,"course_id":course_id,"code":code,"applicant":applicant}
+        x2 = json.dumps(x1)
+        token = random_code.dumps(x2)
         token = token.decode()
 
         #发送邮件
