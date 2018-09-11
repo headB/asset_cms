@@ -8,7 +8,7 @@ class SimpleMiddleware(MiddlewareMixin):
         ##首先检查session，
         #print(request.path)
         
-        if request.path not in('/estimate/login/',"/estimate/check_login/","/estimate/exit/",'/estimate/verify_code/','/','/favicon.ico'):
+        if request.path not in('/estimate/login/send_weixin_mail','/estimate/login/weixin_checkin/','/estimate/login/',"/estimate/check_login/","/estimate/exit/",'/estimate/verify_code/','/','/favicon.ico','/estimate/index/reset_video_code_send/'):
             if request.session.get("uid",False):
                 pass
             else:
@@ -16,6 +16,3 @@ class SimpleMiddleware(MiddlewareMixin):
                     pass
                 else:
                     return redirect('/estimate/login/')
-
-
-        

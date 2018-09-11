@@ -9,9 +9,11 @@ from asset_cms.settings import SECRET_KEY
 #OK！采用新技术了。采用类的话，可以继承很多的新功能的啦。！
 from django.views.generic import View
 from .models import Admin,IewayCookie,FrontEndShow
-from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD,EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER
+from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD,EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER,SECRET_KEY
 import requests
 import json
+import datetime
+
 
 
 
@@ -1486,6 +1488,81 @@ class SendResetVideoCode(View):
 
         return render(request,'estimate/fresh.html',{'world':'重置视频激活码申请,发送你的邮箱成功，请查查看你的邮箱，10秒后自动返回首页!','forward':'/estimate/index/','timer':'10000'})
         
+
+
+#除了这个特殊的接口之外，其他其实不用设置什么特别的了。
+
+#实际一个基于时间和特定密钥组合一起的密钥，和时间相关。
+#对了，就用那个有有效期的itsdangous吧。
+def decode_code(str1):
+    """
+    :paras :str1 :传入密钥，然后尝试解密，如果符合的话，就返回True，否则就是False
+    """
+    #先转换到当前时间，但是秒就是，然后转换时间戳
+    time1 = datetime.datetime.now()
+    time2 = time1 + datetime.timedelta(minutes=1)
+    times1 = time1.strftime("%Y-%m-%d %H:%M:00")
+    times2 = time2.strftime("%Y-%m-%d %H:%M:00")
+    
+    #
+    times1 = hashlib.md5((SECRET_KEY+times1).encode()).hexdigest()
+    times2 = hashlib.md5((SECRET_KEY+times2).encode()).hexdigest()
+    print(times1)
+    if times1 == str1 or  times2 == str1:
+        
+        return True
+    else:
+        return False
+
+    #     return redirect("/estimate/index")
+    # else:
+    #     return HttpResponse("通讯失败，请联系管理员")
+    
+class weixin_checkin(View):
+
+    #接口通讯的话，还得限制发送邮件的次数，如何限制呢？可以redis？这样就不用建立专门的一一建立邮箱信息去记录了，恩恩，不过暂时先不用设置
+    #还有，这样接口操作的话，还得保证两端都是用同样的对称密钥对话，不不，已经是https通讯了，所以，在url地址设置一个特殊值就可以了。！
+    def get(self,request):
+
+        #首先是获取微信的openid，这个是毫无疑问的
+        try:
+            weixin_openid = request.GET['openid']
+            communication_code = request.GET['code']
+        except Exception as e:
+            # return JsonResponse({"message":'请提交有效的openid信息','operate':'False'})
+            return HttpResponse("请提交有效的openid信息")
+
+        #然后尝试可以去解密通讯密钥，看看是否想等。
+
+        if not  decode_code(communication_code):
+            return HttpResponse("服务端与客户端协商失败")
+
+
+        #然后去数据库对比，如果没有获取到，匹配到username的话，就通知用户，请绑定公司邮箱进行实名认证
+        admins = Admin.objects.filter(weixin_openid=weixin_openid)
+
+        if admins:
+            #如果存在数据的话，就进行登记了，直接登陆，其实不用第三方了，应该微信也是有cookie机制的了。
+            #直接记住cookie就可以了。
+            ##设置session值表示成功登陆过!
+            request.session['uid'] = admins[0].id
+            request.session['uname'] = admins[0].realname
+            request.session['pid'] = admins[0].department
+            request.session.set_expiry(60*60*12)
+
+
+            login_admin = Admin.objects.get(username=admins[0].id)
+            login_admin.last_login_time = getTime()
+            login_admin.last_login_ip = request.META['REMOTE_ADDR']
+            login_admin.save()
+            return redirect("/estimate/index")
+            # return JsonResponse({"message":'成功!','operate':'True'})    
+        else:
+            return HttpResponse("请关掉页面,然后输入:<邮箱绑定>这四个字来进行邮箱实名绑定")
+            # return JsonResponse({"message":'请输入:<邮箱绑定>这四个字来进行邮箱实名绑定','operate':'False'})
+            #没有找到相应的信息，请你绑定你的邮箱
+
+
 
 
 
