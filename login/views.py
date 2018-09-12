@@ -1557,7 +1557,7 @@ class weixin_checkin(View):
             request.session.set_expiry(60*60*12)
 
 
-            login_admin = Admin.objects.get(username=admins[0].id)
+            login_admin = Admin.objects.get(id=admins[0].id)
             login_admin.last_login_time = getTime()
             login_admin.last_login_ip = request.META['REMOTE_ADDR']
             login_admin.save()
