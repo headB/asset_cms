@@ -1507,8 +1507,8 @@ def decode_code(str1):
     #先转换到当前时间，但是秒就是，然后转换时间戳
     time1 = datetime.datetime.now()
     time2 = time1 + datetime.timedelta(minutes=1)
-    times1 = time1.strftime("%Y-%m-%d %H:%M:00")
-    times2 = time2.strftime("%Y-%m-%d %H:%M:00")
+    times1 = time1.strftime("%Y-%M+%d=%H:%M:00")
+    times2 = time2.strftime("%Y-%M+%d=%H:%M:00")
     
     #
     times1 = hashlib.md5((SECRET_KEY+times1).encode()).hexdigest()
@@ -1568,8 +1568,10 @@ class weixin_checkin(View):
             # return JsonResponse({"message":'请输入:<邮箱绑定>这四个字来进行邮箱实名绑定','operate':'False'})
             #没有找到相应的信息，请你绑定你的邮箱
 
+class send_weixin_mail(View):
 
+    def get(self,request):
 
-
+        pass
 
         
