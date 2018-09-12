@@ -1572,6 +1572,5 @@ class send_weixin_mail(View):
 
     def get(self,request):
 
-        pass
 
-        
+        return HttpResponse("xx")

@@ -24,4 +24,6 @@ urlpatterns = [
     path("index/reset_video_code/",views.reset_encrypt),
     path("index/reset_video_code_send/",views.SendResetVideoCode.as_view()),
     path("login/weixin_checkin/",views.weixin_checkin.as_view()),
+    path("login/send_weixin_mail/",views.send_weixin_mail.as_view()),
+
 ]
