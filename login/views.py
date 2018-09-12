@@ -1135,6 +1135,10 @@ def reset_encrypt(request):
         #3.active=1
         #4.unActive=1
 
+        #不要偷懒了，还是自己去查询吧
+        token_object = IewayCookie.objects.get(id=1)
+        token = token_object.cookie_value
+
         if not key:
             return False
 
@@ -1191,8 +1195,10 @@ def reset_encrypt(request):
         res = search(key)
     except Exception as e:
         return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误04",'forward':'/estimate/index/'})
+    
     if res.status_code == 200:
         content = json.loads(res.content.decode())
+        print(content)
         if content['errcode'] == 0:
             
             return render(request,'estimate/reset_video_code.html',{'applicant':applicant,'content':content['result']['list']})
