@@ -1513,7 +1513,7 @@ def decode_code(str1):
     #
     times1 = hashlib.md5((SECRET_KEY+times1).encode()).hexdigest()
     times2 = hashlib.md5((SECRET_KEY+times2).encode()).hexdigest()
-    print(times1)
+    
     if times1 == str1 or  times2 == str1:
         
         return True
@@ -1541,7 +1541,7 @@ class weixin_checkin(View):
         #然后尝试可以去解密通讯密钥，看看是否想等。
 
         if not  decode_code(communication_code):
-            return HttpResponse("服务端与客户端协商失败,current_time:%s"%datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            return HttpResponse("服务端与客户端协商失败")
 
 
         #然后去数据库对比，如果没有获取到，匹配到username的话，就通知用户，请绑定公司邮箱进行实名认证
