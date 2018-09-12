@@ -1572,5 +1572,23 @@ class send_weixin_mail(View):
 
     def get(self,request):
 
+        token = request.GET.get('token')
+
+        if not token:
+            return HttpResponse("错误，invalid的token")
+
+        #进行解码延签
+        try:
+        #首先生成一个序列化的对象
+            serializer = Serializer(SECRET_KEY,300)
+            token_info = serializer.loads(token)
+            weixin_openid = token_info['weixin_openid']
+        except Exception as e:
+            print(e)
+            return HttpResponse("通过安检的时候，失败了！请联系管理员")
+
+        #然后，现在就进行数据库操作了。！没有错，就是跨数据库工作，虽然也是estimate数据库。
+
+        
 
         return HttpResponse("xx")
