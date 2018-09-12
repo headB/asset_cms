@@ -1198,7 +1198,7 @@ def reset_encrypt(request):
     
     if res.status_code == 200:
         content = json.loads(res.content.decode())
-        print(content)
+        
         if content['errcode'] == 0:
             
             return render(request,'estimate/reset_video_code.html',{'applicant':applicant,'content':content['result']['list']})
