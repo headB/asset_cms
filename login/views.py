@@ -1541,7 +1541,7 @@ class weixin_checkin(View):
         #然后尝试可以去解密通讯密钥，看看是否想等。
 
         if not  decode_code(communication_code):
-            return HttpResponse("服务端与客户端协商失败")
+            return HttpResponse("服务端与客户端协商失败,current_time:%s"%datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
         #然后去数据库对比，如果没有获取到，匹配到username的话，就通知用户，请绑定公司邮箱进行实名认证
