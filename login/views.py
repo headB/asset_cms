@@ -1523,7 +1523,20 @@ def decode_code(str1):
     #     return redirect("/estimate/index")
     # else:
     #     return HttpResponse("通讯失败，请联系管理员")
-    
+
+def token_create(dict_object,expired):
+
+    serializer = Serializer(SECRET_KEY,expired)
+    token_info = serializer.dumps(dict_object)
+    return token_info
+
+def token_decode(token,expired):
+    serializer = Serializer(SECRET_KEY,expired)
+    token_info = serializer.loads(token)
+    return token_info
+
+
+
 class weixin_checkin(View):
 
     #接口通讯的话，还得限制发送邮件的次数，如何限制呢？可以redis？这样就不用建立专门的一一建立邮箱信息去记录了，恩恩，不过暂时先不用设置
@@ -1531,17 +1544,28 @@ class weixin_checkin(View):
     def get(self,request):
 
         #首先是获取微信的openid，这个是毫无疑问的
+
+
+        
+
+
         try:
-            weixin_openid = request.GET['openid']
             communication_code = request.GET['code']
+
+            token_info = token_decode(communication_code,21600)
+            weixin_openid = token_info['open_id']
+            
+
         except Exception as e:
-            # return JsonResponse({"message":'请提交有效的openid信息','operate':'False'})
-            return HttpResponse("请提交有效的openid信息")
+        
+            return HttpResponse("<h1>请提交有效的openid信息</h1>")
 
-        #然后尝试可以去解密通讯密钥，看看是否想等。
+         #然后尝试可以去解密通讯密钥，看看是否想等。
 
-        if not  decode_code(communication_code):
-            return HttpResponse("服务端与客户端协商失败")
+        # if not  decode_code(communication_code):
+        #     return HttpResponse("<h1>请重新在公众号输入：评分系统，以获取最新的登陆口令</h1>")
+
+        
 
 
         #然后去数据库对比，如果没有获取到，匹配到username的话，就通知用户，请绑定公司邮箱进行实名认证
@@ -1572,6 +1596,7 @@ class send_weixin_mail(View):
 
     def get(self,request):
 
+
         token = request.GET.get('token')
 
         if not token:
@@ -1592,3 +1617,5 @@ class send_weixin_mail(View):
         
 
         return HttpResponse("xx")
+
+
