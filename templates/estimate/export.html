@@ -4,6 +4,31 @@
 
 {% if is_choice %}
 
+<script type="text/javascript">
+
+$("tr").not("tr:eq(0)").each(function(){
+
+        // 设置属性,设置点击事件
+
+        $(this).find("td").eq(6).click(function(){
+
+        req_url = $(this).children("a").attr("href");
+        
+        content = $.get(req_url,function(data,state,xhr){
+                x1 = $.parseHTML(data)
+                x2 = x1[17].getElementsByClassName("panel-body")[0].innerText
+                alert(x2)
+                
+        });
+
+        })
+
+})
+
+
+        
+</script>
+
 <table class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1" >
  	
         <tbody>
