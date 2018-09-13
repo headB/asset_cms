@@ -69,7 +69,11 @@ $("tr").not("tr:eq(0)").each(function(){
                 $(this).find("td").eq(6).click(function(){
         
                 req_url = $(this).children("a").attr("href");
-                
+                $(this).children("a").click(function(){
+
+                        return false;
+
+                })
                 content = $.get(req_url,function(data,state,xhr){
                         x1 = $.parseHTML(data)
                         x2 = x1[17].getElementsByClassName("panel-body")[0].innerText
