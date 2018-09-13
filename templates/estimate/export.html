@@ -4,6 +4,31 @@
 
 {% if is_choice %}
 
+<script type="text/javascript">
+
+$("tr").not("tr:eq(0)").each(function(){
+
+        // 设置属性,设置点击事件
+
+        $(this).find("td").eq(6).click(function(){
+
+        req_url = $(this).children("a").attr("href");
+        
+        content = $.get(req_url,function(data,state,xhr){
+                x1 = $.parseHTML(data)
+                x2 = x1[17].getElementsByClassName("panel-body")[0].innerText
+                alert(x2)
+                
+        });
+
+        })
+
+})
+
+
+        
+</script>
+
 <table class="table table-responsive table-striped table-hover table-bordered" style="width:auto" cellspacing="0" cellpadding="0" border="1" >
  	
         <tbody>
@@ -28,12 +53,42 @@
         <td style="text-align:center">{{x.3|date:"Y-m-j H:i"}}</td>
         <td style="text-align:center" ><a target='_blank' href='/estimate/index/export_txt/?teacher_name={{x.1}}&class_name={{x.2}}&class_info_id={{x.0}}&type_detail={{x.6}}&date={{x.3|date:"Y-m-j"}}' >导出text</a></td>
         <td style="text-align:center" >操作</td>
-        <td style="text-align:center"><a class="tongzhi" target='_blank' href='/estimate/index/export_txt/?teacher_name={{x.1}}&class_name={{x.2}}&class_info_id={{x.0}}&type_detail={{x.6}}' >点击查看评价人数</a></td>
+        <td style="text-align:center"><a class="tongzhi" target='_blank' href='/estimate/index/export_txt/?teacher_name={{x.1}}&class_name={{x.2}}&class_info_id={{x.0}}&type_detail={{x.6}}' ></a>点击查看评价人数</td>
 </tr>
 
 {%endfor%}
 </tbody>
 </table>
+
+<script type="text/javascript">
+
+        $("tr").not("tr:eq(0)").each(function(){
+        
+                // 设置属性,设置点击事件
+        
+                $(this).find("td").eq(6).click(function(){
+        
+                req_url = $(this).children("a").attr("href");
+                $(this).children("a").click(function(){
+
+                        return false;
+
+                })
+                content = $.get(req_url,function(data,state,xhr){
+                        x1 = $.parseHTML(data)
+                        x2 = x1[17].getElementsByClassName("panel-body")[0].innerText
+                        alert(x2)
+                        
+                });
+        
+                })
+        
+        })
+        
+        
+                
+        </script>
+
 {%else%}
 
 <p>请先选择需要导出评分的对象</p>
