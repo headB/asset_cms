@@ -1329,7 +1329,7 @@ class SendResetVideoCode(View):
 
 
             #进行解密
-            active_decode = Serializer(SECRET_KEY,900)
+            active_decode = Serializer(SECRET_KEY,180)
             try:
 
                 #尝试接收参数
@@ -1353,6 +1353,7 @@ class SendResetVideoCode(View):
                 uid = code['uid']
                 code1 = code['code']
                 applicant = code['applicant']
+                email_admin = code['email']
 
                 code = code1
 
@@ -1413,7 +1414,7 @@ class SendResetVideoCode(View):
                 print(e)
                 email_content += "<br><center><h3>新的激活码已经生成,但是,召回%s的激活码失败</h3></center>"%username
 
-                send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER],html_message=email_content)
+                send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,email_admin,],html_message=email_content)
                 return HttpResponse("召回%s的激活码失败,但是%s同学的新激活码已经生成,这是激活码%s,请联系管理员删除旧的激活码"%(username,username,active_code))
                 return render(request,'estimate/fresh.html',{"world":"重置成功","forward":"/estimate/index/"})
 
@@ -1423,77 +1424,90 @@ class SendResetVideoCode(View):
 
 
             
-            send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER],html_message=email_content)
+            send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,email_admin],html_message=email_content)
             return render(request,'estimate/fresh.html',{"world":"重置操作完成,激活码已经发送到你的邮箱,是否存在异常请查看邮件说明","forward":"/estimate/index/"})
             
             #获取学生的信息
+
+
+
+        #实际操作过程告诉我们，还是不能把一大堆的代码写一起啊，看到头晕了。！
+        
+        #现在暂时只能通过简单的else来区分了，想想一个问题就是，如果不是用VSC的话，visual studio Code的ide来编程的话，
+        #不得不说，难度还是想当的大的啊》～
+
+        else:
+
+                #名字
+                #身份证
+                #课程名称
+            try:           
+                username = request.GET['username']
+                id = request.GET['id']
+                course_id = request.GET['course_id']
+                course_name = request.GET['course_name']
+                uid = request.GET['uid']
+                code = request.GET['code']
+                applicant = request.GET['applicant']
+            except Exception as e:
+                return render(request,'estimate/fresh.html',{'world':'学生信息不完整！!','forward':'/estimate/index/','timer':'2000'})
+
+
+
+            #尝试获取重置授权码，如果存在，并且是匹配的话，就返回激活码信息，这里的激活码可以不用保存到数据库，因为里面就自带有时效了。
+            #OK！现在引入新的激活码验证码机制
+            #不过这里有时间的话，还是建议加以限制一下。！
             
-            #名字
-            #身份证
-            #课程名称
-        try:           
-            username = request.GET['username']
-            id = request.GET['id']
-            course_id = request.GET['course_id']
-            course_name = request.GET['course_name']
-            uid = request.GET['uid']
-            code = request.GET['code']
-            applicant = request.GET['applicant']
-        except Exception as e:
-            return render(request,'estimate/fresh.html',{'world':'学生信息不完整！!','forward':'/estimate/index/','timer':'2000'})
+            #加密随机码 有时效性的
+            #15分钟内有效
+
+            #从当前的session获取用户的id，然后再尝试获取邮箱地址
+            uid_admin = request.session.get("uid")
+
+            if not uid_admin:
+                return render(request,'estimate/fresh.html',{'world':'请先登陆!','forward':'/estimate/index/','timer':'2000'})
+
+            try:
+                email_info = Admin.objects.get(id=uid_admin)
+            except Exception as e:
+                return HttpResponse("查询用户数据异常，请联系馬騮！错误01")
+
+            email = email_info.email
 
 
+            random_code = Serializer(SECRET_KEY,180)
+            user_id = "Canton_foshan_strict"
+            x1 = {"confirm":user_id,"username":username,"id":id,"course_name":course_name,"uid":uid,"course_id":course_id,"code":code,"applicant":applicant,'email':email}
+            x2 = json.dumps(x1)
+            token = random_code.dumps(x2)
+            token = token.decode()
 
-        #尝试获取重置授权码，如果存在，并且是匹配的话，就返回激活码信息，这里的激活码可以不用保存到数据库，因为里面就自带有时效了。
-        #OK！现在引入新的激活码验证码机制
-        #不过这里有时间的话，还是建议加以限制一下。！
-        
-        #加密随机码 有时效性的
-        #15分钟内有效
-        random_code = Serializer(SECRET_KEY,900)
-        user_id = "Canton_foshan_strict"
-        x1 = {"confirm":user_id,"username":username,"id":id,"course_name":course_name,"uid":uid,"course_id":course_id,"code":code,"applicant":applicant}
-        x2 = json.dumps(x1)
-        token = random_code.dumps(x2)
-        token = token.decode()
+            #发送邮件
+            from django.core.mail import send_mail
 
-        #发送邮件
-        from django.core.mail import send_mail
+            
 
-        #从当前的session获取用户的id，然后再尝试获取邮箱地址
-        uid = request.session.get("uid")
+            #待发送的文本
+            html_message = "<center><p>点击正式申请重置，这个过程会将该学生的原有的激活码,并且重新申请一下视频激活码，每一个激活码都需要一定的费用，请查看学生是否真的有需要</p><p>另外一点，一旦获得新的视频激活码，将自动发送一份邮箱告知任小龙老师，以作备份</p></center>"
 
-        if not uid:
-            return render(request,'estimate/fresh.html',{'world':'请先登陆!','forward':'/estimate/index/','timer':'2000'})
+            #追加学生信息
+            student_info  = "<center><br><br>请再次确认学生的信息<br>名字:%s<br>身份证:%s<br>课程:%s<br></center>"%(username,id,course_name)
 
-        try:
-            email_info = Admin.objects.get(id=uid)
-        except Exception as e:
-            return HttpResponse("查询用户数据异常，请联系馬騮！错误01")
+            #然后追加token数值
+            active_url = "<br><br><center><a href=\"http://gz.520langma.com:82/estimate/index/reset_video_code_send/?nizhidaowojiangmiesuanniying=%s\" >点击我就对了(唔好理，总之好犀利，明唔明)<a></center>"%token
 
-        email = email_info.email
+            html_message += active_url
 
-        #待发送的文本
-        html_message = "<center><p>点击正式申请重置，这个过程会将该学生的原有的激活码,并且重新申请一下视频激活码，每一个激活码都需要一定的费用，请查看学生是否真的有需要</p><p>另外一点，一旦获得新的视频激活码，将自动发送一份邮箱告知任小龙老师，以作备份</p></center>"
+            html_message += student_info
+            #是啊，邮件还得兼顾内容问题
+            send_mail("重置视频激活码申请","from beetle tell","lizhixuan@wolfcode.cn",[email,],html_message=html_message)
 
-        #追加学生信息
-        student_info  = "<center><br><br>请再次确认学生的信息<br>名字:%s<br>身份证:%s<br>课程:%s<br></center>"%(username,id,course_name)
-
-        #然后追加token数值
-        active_url = "<br><br><center><a href=\"http://gz.520langma.com:82/estimate/index/reset_video_code_send/?nizhidaowojiangmiesuanniying=%s\" >点击我就对了(唔好理，总之好犀利，明唔明)<a></center>"%token
-
-        html_message += active_url
-
-        html_message += student_info
-        #是啊，邮件还得兼顾内容问题
-        send_mail("重置视频激活码申请","from beetle tell","lizhixuan@wolfcode.cn",[email,],html_message=html_message)
-
-        
-        #设置一定的验证机制
+            
+            #设置一定的验证机制
 
 
-        return render(request,'estimate/fresh.html',{'world':'重置视频激活码申请,发送你的邮箱成功，请查查看你的邮箱，10秒后自动返回首页!','forward':'/estimate/index/','timer':'10000'})
-        
+            return render(request,'estimate/fresh.html',{'world':'重置视频激活码申请,发送你的邮箱成功，请查查看你的邮箱，10秒后自动返回首页!','forward':'/estimate/index/','timer':'10000'})
+            
 
 
 #除了这个特殊的接口之外，其他其实不用设置什么特别的了。
