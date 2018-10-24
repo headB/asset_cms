@@ -1374,6 +1374,19 @@ class SendResetVideoCode(View):
             #对了啦。就是把这些信息封装到json里面就可以的啦。！！
             
 
+            #OK!关键到这里了,到了这一步,就可以防止班主任手贱,以为是网络出问题,然后多点几次的行为
+
+            #首先,每一次准备去创建新的激活码之前,需要先把旧的激活码对比一下,并且,如果数据库中,对应的用户
+
+            #现在就去数据库,对比一下现在需要撤销的视频激活码和数据库请求重置的激活码是否相同
+            #login_admin里面的reset_videocode_request
+            try:
+                reset_request_query = Admin.objects.get(reset_videocode_request=code1)
+            except Exception as e:
+                return render(request,'estimate/fresh.html',{'world':"在数据库中找不到你的申请,或者,你的视频重置请求已经完成,请查看邮箱是否存在已经完成的结果",'forward':'/estimate/index/','timer':'15000'})
+                
+
+
             #先创建，后召回激活码
             
             try:
@@ -1393,6 +1406,8 @@ class SendResetVideoCode(View):
                     return render(request,'estimate/fresh.html',{'world':"出现严重问题，获取token失败或者无法创建激活码，错误01",'forward':'/estimate/index/','timer':'15000'})
 
             #成功获取了激活码之后，就可以准备去毁灭，召回激活码了，恩恩，看完如何毁灭先.
+
+            
             
             #书写代码
             from django.core.mail import send_mail
@@ -1431,7 +1446,10 @@ class SendResetVideoCode(View):
 
             #发送邮箱
 
+            #OK!到了这里,应该就表示已经创建了新的激活码,然后撤销了旧的激活码了.所以,现在可以对应账户里面reset_videocode_request的内容了
 
+            reset_request_query.reset_videocode_request = None
+            reset_request_query.save()
             
             send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER,email_admin],html_message=email_content)
             return render(request,'estimate/fresh.html',{"world":"重置操作完成,激活码已经发送到你的邮箱,是否存在异常请查看邮件说明","forward":"/estimate/index/"})
