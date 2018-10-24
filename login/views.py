@@ -1240,6 +1240,15 @@ def try_login_ieway():
 
 
 #设置一个专门用于重置视频激活码的函数
+
+#这里需要添加事务了,为的就是为了保证班主任,只能一次性申请一个激活码
+
+#思路,每次邮箱申请请求,就就顺便发送一个旧的序列号到数据库,
+#然后,当班主任真正去为这个旧的,对应的序列号申请,判断是否申请成功,然后流程是再撤销旧的序列号,
+#然后就是删除重置旧序列号的请求了.!
+
+#但想想,好像又不是全程都是事务,不了,想想还是,直接用悲观锁算了,这跟事务没有关系的.OK!开工.
+
 def try_to_create(username,id,course_id_string_type):
     #值的只注意的事，这里涉及两步走
     #1.首先是，哇哇，原子性啊。不不不。这个没得原子性啊～。
@@ -1502,6 +1511,12 @@ class SendResetVideoCode(View):
             #是啊，邮件还得兼顾内容问题
             send_mail("重置视频激活码申请","from beetle tell","lizhixuan@wolfcode.cn",[email,],html_message=html_message)
 
+            #就是这个地方,一旦邮件发送成功,我这里,就开始更新当前的用户在数据库字段的reset_video_request里面的null值或者激活码数值
+
+            #首先尝试获取用户ID,用于查询数据库对应的管理员数据
+            request_object = Admin.objects.get(id=uid_admin)
+            request_object.reset_videocode_request = code
+            request.save()
             
             #设置一定的验证机制
 
