@@ -1516,7 +1516,7 @@ class SendResetVideoCode(View):
             #首先尝试获取用户ID,用于查询数据库对应的管理员数据
             request_object = Admin.objects.get(id=uid_admin)
             request_object.reset_videocode_request = code
-            request.save()
+            request_object.save()
             
             #设置一定的验证机制
 
