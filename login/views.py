@@ -1350,7 +1350,7 @@ class SendResetVideoCode(View):
                     return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误01",'forward':'/estimate/index/'})
             except Exception as e:
                 
-                return render(request,'estimate/fresh.html',{'world':"重置失败，考虑一下是不是超过15分钟了，稳程序猿吧，毕竟是他们开发的，错误02",'forward':'/estimate/index/','timer':'1000'})
+                return render(request,'estimate/fresh.html',{'world':"重置失败，考虑一下是不是超过3分钟了，稳程序猿吧，毕竟是他们开发的，错误02",'forward':'/estimate/index/','timer':'6000'})
         
             #首先尝试解析出本次应该重置的学生的信息先。
             try:
