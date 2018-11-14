@@ -1618,6 +1618,11 @@ class weixin_checkin(View):
         #然后去数据库对比，如果没有获取到，匹配到username的话，就通知用户，请绑定公司邮箱进行实名认证
         admins = Admin.objects.filter(weixin_openid=weixin_openid)
 
+        if not admins:
+
+            admins = Admin.objects.filter(xcx_openid=weixin_openid)
+
+
         if admins:
             #如果存在数据的话，就进行登记了，直接登陆，其实不用第三方了，应该微信也是有cookie机制的了。
             #直接记住cookie就可以了。
@@ -1666,3 +1671,13 @@ class send_weixin_mail(View):
         return HttpResponse("xx")
 
 
+class quick_verify(View):
+
+    def get(self,request):
+
+        
+        return render(request,"estimate/quick_verify.html",{})
+
+    def post(self,reuqst):
+
+        pass

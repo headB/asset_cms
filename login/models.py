@@ -13,6 +13,7 @@ class Admin(models.Model):
     last_login_time = models.DateTimeField(null=True)
     last_login_ip = models.CharField(max_length=50,null=True)
     weixin_openid = models.CharField(max_length=80,null=False)
+    xcx_openid = models.CharField(max_length=100,null=False)
     reset_videocode_request = models.CharField(max_length=200,null=True)
     quick_verify = models.CharField(max_length=100,null=True)
 
