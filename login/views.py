@@ -824,10 +824,10 @@ def judge_network_state(acls,network):
     
     break_deny_all = True
     
-    deny_all = "<span style='color:red'><b>全部禁网</b></span>"
-    permit_all = "<span style='color:green'><b>全部上网</b></span>"
-    permit_local = "<span style='color:blue'><b>局部上网，有异常</b></span>"
-    deny_local = "<span style='color:blue'><b>局部禁网,有异常</b></span>"
+    deny_all = "<span style='color:red'><b>断网</b></span>"
+    permit_all = "<span style='color:green'><b>通网</b></span>"
+    permit_local = "<span style='color:blue'><b>局部通网，有异常</b></span>"
+    deny_local = "<span style='color:blue'><b>局部断网网,有异常</b></span>"
 
     #处理优先级
     
