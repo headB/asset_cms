@@ -759,7 +759,7 @@ def network_manager(request):
     for x in class_room_infos:
         x.rules = ACL_classification_dict[str(x.ACL)]
         x.state =  judge_network_state(ACL_classification_dict[str(x.ACL)]['online'],x.ip_addr)
-        turn_online = re.findall("全部上网",x.state)
+        turn_online = re.findall("通网",x.state)
         if turn_online:
             x.switch = "offline"
         else:
