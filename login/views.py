@@ -84,7 +84,6 @@ def index(request):
     info['location_name'] = location_name
     info['locations'] = location_names
 
-
     return render(request,'estimate/estimate_index.html',info)
         
 ##登录页面
@@ -784,7 +783,7 @@ def network_manager(request):
             x.switch = "online"
 
     
-    if isset_accept:
+    if isset_accept(reuqest):
 
         json_data = []
         for x in class_room_infos:
