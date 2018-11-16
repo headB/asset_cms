@@ -783,7 +783,7 @@ def network_manager(request):
             x.switch = "online"
 
     
-    if isset_accept(reuqest):
+    if isset_accept(request):
 
         json_data = []
         for x in class_room_infos:
