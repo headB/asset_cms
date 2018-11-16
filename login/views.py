@@ -1735,4 +1735,4 @@ def converst2datetime(request_meta,datetime_object,format=("%Y-%m-%d %H:%M")):
 
 def isset_accept(request_object):
 
-    return re.findall('(json|xml'),request_object.META.get('accept'))
+    return re.findall(('(json|xml'),request_object.META.get('accept'))
