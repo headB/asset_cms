@@ -523,8 +523,9 @@ def export_data(request):
             if y == 3:
                 time = x[3]/1000
 
-                time1 =  converst2datetime(request.META.get("HTTP_ACCEPT"),datetime.fromtimestamp(time))
-                if time1:
+                if isset_accept(request):
+
+                    time1 =  converst2datetime(datetime.fromtimestamp(time))
                     y2.append(time1)
                 else:
                     y2.append(datetime.fromtimestamp(time))
@@ -1721,16 +1722,9 @@ class quick_verify(View):
 
 #针对django的datetime问题,就准备搞这个时间,配合看看客户端是否要求json,application之类的.
 
-def converst2datetime(request_meta,datetime_object,format=("%Y-%m-%d %H:%M")):
-
-    x1 = re.findall('(json|xml)',request_meta)
-
-    if x1:
+def converst2datetime(datetime_object,format=("%Y-%m-%d %H:%M")):
 
         return datetime_object.strftime(format)
-    else:
-
-        return False
 
 def isset_accept(request_object):
 
