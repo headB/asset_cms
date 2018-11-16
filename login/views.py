@@ -791,7 +791,7 @@ def network_manager(request):
 
             temp = {}
             temp['class_name'] = x.class_number
-            temp['status'] = x.state
+            temp['status'] = "通网" if (re.findall("通网",x.state)) else "断网"
             operate = "deny" if (re.findall("通网",x.state)) else "permit"
             temp['operate_link'] = "?cls=%s&operate=%s&acl=520su1314"%(x.id,operate)
             json_data.append(temp)
