@@ -536,7 +536,7 @@ def export_data(request):
 
     #可以从这里开始,添加对不同客户端返回不用的响应类型
 
-    if request.META.get("HTTP_ACCEPT") == 'application/json':
+    if isset_accept(request):
         del(est_dict['class_info_1'])
         return  HttpResponse(json.dumps(est_dict))
     
