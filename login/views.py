@@ -16,6 +16,7 @@ import datetime
 
 #添加对不同的客户端返回的response的body支持,例如支持json,xml,等等.
 from django.core import serializers
+import json
 
 
 
@@ -533,8 +534,7 @@ def export_data(request):
 
     if request.META.get("HTTP_ACCEPT") == 'application/json':
         
-        return serializers.serialize('json',est_dict)
-
+        return json.dumps(est_dict)
     
     return render(request,'estimate/export.html',est_dict)
 
