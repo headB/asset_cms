@@ -14,6 +14,9 @@ import requests
 import json
 import datetime
 
+#添加对不同的客户端返回的response的body支持,例如支持json,xml,等等.
+from django.core import serializers
+
 
 
 
@@ -524,6 +527,14 @@ def export_data(request):
             else:
                 y2.append(x[y])
         est_dict['class_info'].append(y2)
+
+
+    #可以从这里开始,添加对不同客户端返回不用的响应类型
+
+    if request.META.get("HTTP_ACCEPT") == 'application/json':
+        
+        return serializers.serialize('json',est_dict)
+
     
     return render(request,'estimate/export.html',est_dict)
 
