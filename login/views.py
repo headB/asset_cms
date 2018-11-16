@@ -539,7 +539,7 @@ def export_data(request):
 
     if request.META.get("HTTP_ACCEPT") == 'application/json':
 
-        return json.dumps(est_dict,cls=ComplexEncoder)
+        return json.dumps(est_dict)
     
     return render(request,'estimate/export.html',est_dict)
 
