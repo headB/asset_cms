@@ -84,8 +84,6 @@ def index(request):
     info['location_name'] = location_name
     info['locations'] = location_names
 
-    
-
 
     return render(request,'estimate/estimate_index.html',info)
         
@@ -1737,4 +1735,7 @@ def converst2datetime(request_meta,datetime_object,format=("%Y-%m-%d %H:%M")):
 
 def isset_accept(request_object):
 
-    return re.findall(('(json|xml'),request_object.META.get('HTTP_ACCEPT')) and not (re.findall(('html'),request_object.META.get('HTTP_ACCEPT')))
+    x1 = re.findall(('(json|xml)'),request_object.META.get('HTTP_ACCEPT'))
+    x2 = re.findall(('html'),request_object.META.get('HTTP_ACCEPT'))
+    
+    return  x1 and not x2
