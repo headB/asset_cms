@@ -534,7 +534,7 @@ def export_data(request):
 
     if request.META.get("HTTP_ACCEPT") == 'application/json':
         
-        return json.dumps(est_dict)
+        return json.dumps(est_dict,cls=ComplexEncoder)
     
     return render(request,'estimate/export.html',est_dict)
 
@@ -1593,7 +1593,14 @@ def token_decode(token,expired):
     token_info = serializer.loads(token)
     return token_info
 
-
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, date):
+            return obj.strftime('%Y-%m-%d')
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 class weixin_checkin(View):
 
