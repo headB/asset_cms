@@ -20,7 +20,6 @@ import json
 
 
 
-
 ## 公用变量
 network_end_ip_list = ['0','64','32']
 network_mask_list = ['127','191','223']
@@ -524,8 +523,14 @@ def export_data(request):
         for y in range(0,len(x)):
             if y == 3:
                 time = x[3]/1000
-                y2.append(datetime.fromtimestamp(time))
+
+                time1 =  converst2datetime(request.META.get("HTTP_ACCEPT"),datetime.fromtimestamp(time))
+                if time1:
+                    y2.append(time1)
+                else:
+                    y2.append(datetime.fromtimestamp(time))
             else:
+
                 y2.append(x[y])
         est_dict['class_info'].append(y2)
 
@@ -533,7 +538,7 @@ def export_data(request):
     #可以从这里开始,添加对不同客户端返回不用的响应类型
 
     if request.META.get("HTTP_ACCEPT") == 'application/json':
-        
+
         return json.dumps(est_dict,cls=ComplexEncoder)
     
     return render(request,'estimate/export.html',est_dict)
@@ -1593,14 +1598,6 @@ def token_decode(token,expired):
     token_info = serializer.loads(token)
     return token_info
 
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, date):
-            return obj.strftime('%Y-%m-%d')
-        else:
-            return json.JSONEncoder.default(self, obj)
 
 class weixin_checkin(View):
 
@@ -1699,3 +1696,17 @@ class quick_verify(View):
     def post(self,reuqst):
 
         pass
+
+
+#针对django的datetime问题,就准备搞这个时间,配合看看客户端是否要求json,application之类的.
+
+def converst2datetime(request_meta,datetime_object,format=("%Y-%m-%d %H:%M")):
+
+    x1 = re.findall('(json|xml)',request_meta)
+
+    if x1:
+
+        return datetime_object.strftime(format)
+    else:
+
+        return False
