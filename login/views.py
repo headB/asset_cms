@@ -771,8 +771,10 @@ def network_manager(request):
 
     ## 尝试循环分类
     #合并两个数据，取合集
-    print()
+    
     for x in class_room_infos:
+        
+
         x.rules = ACL_classification_dict[str(x.ACL)]
         x.state =  judge_network_state(ACL_classification_dict[str(x.ACL)]['online'],x.ip_addr)
         turn_online = re.findall("通网",x.state)
@@ -780,6 +782,26 @@ def network_manager(request):
             x.switch = "offline"
         else:
             x.switch = "online"
+
+    
+    if isset_accept:
+
+        json_data = []
+        for x in class_room_infos:
+
+            temp = {}
+            temp['class_name'] = x.class_number
+            temp['status'] = x.state
+            operate = "deny" if (re.findall("通网",x.state)) else "permit"
+            temp['operate_link'] = "?cls=%s&operate=%s&acl=520su1314"%(x.id,operate)
+            json_data.append(temp)
+        
+        return HttpResponse(json.dumps(json_data))
+
+        
+
+    
+
 
     return render(request,"estimate/network.html",{"acl_infos":class_room_infos})
 
@@ -1710,3 +1732,7 @@ def converst2datetime(request_meta,datetime_object,format=("%Y-%m-%d %H:%M")):
     else:
 
         return False
+
+def isset_accept(request_object):
+
+    return re.findall('(json|xml'),request_object.META.get('accept'))
