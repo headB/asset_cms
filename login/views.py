@@ -950,9 +950,12 @@ def judge_network_state(acls,network):
 
 class Telnet2Huawei:
 
-    def __init__(self):
+    def __init__(self,HOSTNAME='',PASSWORD='',USERNAME=''):
         import telnetlib
-        from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
+
+        if not all([HOSTNAME,PASSWORD,USERNAME]):
+            from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
+
         USERNAME = (USERNAME+"\n").encode()
         PASSWORD = (PASSWORD+"\n").encode()
         self.chan = telnetlib.Telnet(host=HOSTNAME,port=23,timeout=5)
@@ -991,10 +994,15 @@ def set_network(request):
     if not all([class_id,operate]) or not operate_verify:
         return redirect("/estimate/index/network")
     
+    #================
+    #这个位置挺重要的,就是实例化一个 实例 去可以随便调用交换机命令
+    #================
     try:
         chan = Telnet2Huawei()
     except Exception as e:
         return render(request,'estimate/fresh.html',{'world':"出现致命错误，交换机链接失败，请2分钟之后再尝试！或者联系技术人员！"})
+
+    #================
 
     #查出课室的id以及他的ACL名字
     try:
@@ -1037,7 +1045,30 @@ def set_network(request):
         #设置开启网络的规则
         deny_rules += "rule %s deny ip source 192.168.%s.%s 0.0.0.%s\n"%(rule_list[x],ip_net,network_end_ip_list[x],network_mask_list[x])
 
+    #============================
+    #这里设计一下,用于检测广州,用于跨交换机设置开断网
+    #============================
 
+    #检测post过来的课室id,看看是否需要多开一个实例去操作交换机
+
+    if (int(class_id) in (19,21)):
+        from asset_cms.settings import OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME
+
+    def office_switch_command(rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME):
+
+    # if (class_id in (19,21)):
+
+        #检测到需要跨交换机
+        
+        import time
+        office_switch = Telnet2Huawei(HOSTNAME=OFFICE_HOSTNAME,PASSWORD=OFFICE_PASSWORD,USERNAME=OFFICE_USERNAME)
+        office_switch.send(rules)
+        
+        time.sleep(1.5)
+        
+        
+
+    
 #根据开启还是关闭网络来操作
     if operate == "permit":
 
@@ -1051,7 +1082,19 @@ def set_network(request):
         for x in rule_stu_online:
             chan.send("undo rule %s\n"%x)
         
+
+
         chan.send(permit_rules)
+
+        #检测是否需要跨交换机
+        if (int(class_id) in (19,21)):
+            
+            cls_infos.ACL
+            permit_rules = "ACL " + cls_infos.ACL + "\n" + permit_rules
+            office_switch_command(permit_rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME)
+
+
+            
 
     else:
        #去除所有开网的语句
@@ -1065,6 +1108,16 @@ def set_network(request):
             chan.send("undo rule %s\n"%x)  
         
         chan.send(deny_rules)
+        
+        #检测是否需要跨交换机
+        if (int(class_id) in (19,21)):
+            
+            deny_rules = "ACL " + cls_infos.ACL + "\n" + deny_rules
+            office_switch_command(deny_rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME)
+            
+            
+
+        
 
     chan.send("520su\n")
     #在这截留以上所有的操作，并且打印，查看过程！
