@@ -1785,3 +1785,35 @@ def isset_accept(request_object):
     x2 = re.findall(('html'),request_object.META.get('HTTP_ACCEPT'))
     
     return  x1 and not x2
+
+
+#新功能,已经成功登陆的话,可以就可以跳转到<学分系统>
+class forward_to_credit(View):
+
+    def get(self,request):
+
+        #直接把ID+一个固定的密钥然后再SHA1,然后对方服务器采用相同的解密方式,就可以了.
+        #然后他们的访问方式是通过https的形式传递的,危害性就没有那么大了.
+
+
+        decode_tool = Serializer("wolfcode2048",300)
+        uid = request.session.get('uid')
+
+        #然后查询完整的信息,
+
+        user_info_res = Admin.objects.get(id=uid)
+
+        user_info = {}
+        user_info['username'] = user_info_res.username
+        user_info['realname'] = user_info_res.realname
+        user_info['id'] = user_info_res.id
+
+        user_info_json = json.dumps(user_info)
+
+        encypt_word = decode_tool.dumps(user_info_json)
+
+        print(encypt_word)
+
+        return_url = "http://www.btou.com/api/v1_0/teachers/login/?uid=%s"%encypt_word.decode()
+
+        return redirect(return_url)
