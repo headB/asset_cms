@@ -1814,6 +1814,6 @@ class forward_to_credit(View):
 
         print(encypt_word)
 
-        return_url = "http://www.btou.com/api/v1_0/teachers/login/?uid=%s"%encypt_word.decode()
+        return_url = "http://credit.520langma.com/api/v1_0/teachers/login/?uid=%s"%encypt_word.decode()
 
         return redirect(return_url)
