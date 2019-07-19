@@ -1087,7 +1087,7 @@ def set_network(request):
         chan.send(permit_rules)
 
         #检测是否需要跨交换机
-        if (int(class_id) in (19,21)):
+        if (int(class_id) in (19,21,37)):
             
             cls_infos.ACL
             permit_rules = "ACL " + cls_infos.ACL + "\n" + permit_rules
@@ -1812,8 +1812,8 @@ class forward_to_credit(View):
 
         encypt_word = decode_tool.dumps(user_info_json)
 
-        print(encypt_word)
+        
 
-        return_url = "http://credit.520langma.com/api/v1_0/teachers/login/?uid=%s"%encypt_word.decode()
+        return_url = "http://www.btou.com/api/v1_0/teachers/login/?uid=%s"%encypt_word.decode()
 
         return redirect(return_url)
