@@ -1110,7 +1110,7 @@ def set_network(request):
         chan.send(deny_rules)
         
         #检测是否需要跨交换机
-        if (int(class_id) in (19,21)):
+        if (int(class_id) in (19,21,37)):
             
             deny_rules = "ACL " + cls_infos.ACL + "\n" + deny_rules
             office_switch_command(deny_rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME)
