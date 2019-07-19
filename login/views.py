@@ -1051,7 +1051,7 @@ def set_network(request):
 
     #检测post过来的课室id,看看是否需要多开一个实例去操作交换机
 
-    if (int(class_id) in (19,21)):
+    if (int(class_id) in (19,21,37)):
         from asset_cms.settings import OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME
 
     def office_switch_command(rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME):
