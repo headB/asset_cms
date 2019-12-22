@@ -1218,7 +1218,7 @@ def reset_encrypt(request):
     #4.班级
     #
     user_id = request.session.get("uid")
-    if str(user_id) != 999:
+    if str(user_id) != "5":
         return render(request, 'estimate/fresh.html',
                       {'world': "现在只有管理员才能操作重置，请建议学员用公众号的<学员认证>完成实名认证后点击《视频激活码》进行微信支付重置",
                        'forward': '/estimate/index/'})
@@ -1430,7 +1430,7 @@ class SendResetVideoCode(View):
 
         user_id = request.session.get("uid")
 
-        if str(user_id) !=  999:
+        if str(user_id) !=  "5":
             return render(request, 'estimate/fresh.html',
                           {'world': "现在只有管理员才能操作重置，请建议学员用公众号的<学员认证>完成实名认证后点击《视频激活码》进行微信支付重置", 'forward': '/estimate/index/'})
 
