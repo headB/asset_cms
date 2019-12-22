@@ -1201,6 +1201,7 @@ def replace_escape(str):
 #OK,这里添加新功能，让班主任可以重置学生的加密视频的激活码
 #无非就是使用requests来操作的。
 
+# 激活码重置
 def reset_encrypt(request):
 
     import requests
@@ -1216,7 +1217,13 @@ def reset_encrypt(request):
     #3.被操作人的名字
     #4.班级
     #
+    user_id = request.get("uid")
+    if str(user_id) != 999:
+        return render(request, 'estimate/fresh.html',
+                      {'world': "现在只有管理员才能操作重置，请建议学员用公众号的<学员认证>完成实名认证后点击《视频激活码》进行微信支付重置",
+                       'forward': '/estimate/index/'})
 
+    # 核心重置函数
     def search(key):
         #get方法
         reqest_url = "http://cer.ieway.cn/api/v1/user/mng/course/list/jsonall"
@@ -1345,6 +1352,8 @@ def try_to_create(username,id,course_id_string_type):
     #1.首先是，哇哇，原子性啊。不不不。这个没得原子性啊～。
     #不过保险一点，还是先创建新的激活码，然后再召回以前的激活码，这样会
 
+
+
     #获取token获取
     import datetime
     import requests
@@ -1418,6 +1427,12 @@ class SendResetVideoCode(View):
         locations = FrontEndShow.objects.get(id=2)
         if locations.location.id != 1:
             return render(request,'estimate/fresh.html',{'world':"请登录广州的评分系统进行操作，错误01",'forward':'/estimate/index/'})
+
+        user_id = request.session.get("uid")
+
+        if str(user_id) !=  999:
+            return render(request, 'estimate/fresh.html',
+                          {'world': "现在只有管理员才能操作重置，请建议学员用公众号的<学员认证>完成实名认证后点击《视频激活码》进行微信支付重置", 'forward': '/estimate/index/'})
 
  
         active_code = request.GET.get("nizhidaowojiangmiesuanniying")
