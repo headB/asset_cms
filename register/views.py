@@ -200,7 +200,7 @@ def send_register_code(request,title=None,append_url=None):
         #接收post过来的信息，例如是邮件地址，
         to_list = ['lizhixuan@wolfcode.cn',]
         if title == None:
-            title = "小码哥/叩丁狼评价系统-注册码"
+            title = "xx评价系统-注册码"
 
         content = """这是注册老师评价系统的注册/重置码:%s
         注意：该链接到达你邮箱以后30分钟之内操作有效，超时无效，
