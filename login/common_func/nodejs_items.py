@@ -38,7 +38,7 @@ module.exports = function(){
 		for (x in os.networkInterfaces()){for ( x1 in os.networkInterfaces()[x]){if (req.ip == os.networkInterfaces()[x][x1]['address']){var act_ip = true;};}}
 
 		if(!req.session._initialize){
-			if( req.ip==localIp || ip==req.ip || act_ip ){
+			if( req.ip==localIp || ip==req.ip || act_ip || req.ip =="127.0.0.1" || req.ip =="172.17.0.1" ){
 				req.session.teacher = true;
 			}
 			req.session._initialize = true;
