@@ -51,18 +51,18 @@
             <br><br><br>
         
             <center>
-                <h1 style="color:red">现在已经支持微信一键登陆，但是仅限广州，如有其他需求可以提出</h1>
+                <h1 style="color:red"></h1>
                
-            <h3>有问题记得反馈喔~</h4>
+            <h3></h4>
         </center>
 
 <form id="login" name="form1" method="post" action="../check_login/">
     {% csrf_token %}
-    <h1>小碼哥&叩丁狼-教學通用管理系統</h1>
+    <h1>xx教学管理系统</h1>
     <fieldset id="inputs">
         <input id="username" name="username" type="text" placeholder="请输入用户名" autofocus required>
         <input id="password" name="password" type="password" placeholder="请输入密码" required >
-        <input id="yanzhenma" name="codeImage" autocomplete="off" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="../verify_code/" /><a href="javascript:void(0)" onclick="changing()">睇唔清楚??点击尼度刷新验证码</a>
+        <input id="yanzhenma" name="codeImage" autocomplete="off" placeholder="请输入下面的验证码，点击验证码可以刷新" type="text" size="6" required ><img style=""  alt="看不清" id="checkpic" onclick="changing();" src="../verify_code/" /><a href="javascript:void(0)" onclick="changing()">点击尼度刷新验证码</a>
 
     </fieldset>
     <fieldset id="actions">
@@ -77,11 +77,7 @@
     <h2>powered by django2.0</h2>
 </form>
 {% load staticfiles %}
-<div style="position: fixed;bottom: 40px;right: 40px;width: 259px;height: 259px;overflow: hidden;"><img class="img-responsive " src="{% static 'login/weixin.png' %}" alt="叩丁狼教育" style="
-    margin-top: -2px;
-    margin-left:  -2px;
-">
-</div>
+
 
 
 </body>
