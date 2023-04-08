@@ -160,7 +160,7 @@ OFFICE_PASSWORD = "kumanxuan@gzit"
 
 
 IEWAY_USERNAME = "775121173@qq.com"
-IEWAY_PASSWORD = "ce37dfe20f1fc794fbdea8ef22976b86"
+IEWAY_PASSWORD = "please input you ieway password"
 
 BACKUP_INFO_TO_EMAIL_USER = 'will@wolfcode.cn'
 #BACKUP_INFO_TO_EMAIL_USER = 'lizhixuan@wolfcode.cn'
