@@ -220,7 +220,7 @@ def open_sqlite(type_detail,request):
     pid = request.session.get('pid')
     uid = request.session.get('uid')
     if pid == 1:
-        sql = "select * from classinfo order by inputTime DESC limit 25"
+        sql = "select * from classinfo order by inputTime DESC"
     else:
         sql = "select * from classinfo where creator = '%s' order by inputTime DESC limit 25"%uid
 

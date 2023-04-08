@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'q1z9=_0k)j_p4n3n^&e-w!r0wv25h7465q_rlb262!rt0@#ck6'
+SECRET_KEY = 'q1z9=_0k)j_p4n3n^&e-w!r0wv25h7465q_rlb262!lizhixua'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -43,7 +43,8 @@ INSTALLED_APPS = [
 EXCLUDE_URL =  (
      '/estimate/login/',
     '/estimate/check_login/',      
-    '/estimate/exit/',      
+    '/estimate/exit/',
+    '/estimate/index/reset_video_code_send/',
 )
 
 MIDDLEWARE = [
@@ -63,7 +64,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR,'templates')],
-        'APP_DIRS': True,
+        'APP_DIRS': False,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -87,10 +88,10 @@ DATABASES = {
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE':'django.db.backends.mysql',
         'NAME':'estimate',
-        'USER':'estimate',
-        'PASSWORD':'',
-        'HOST':'y.xmg520.com',
-        'PORT':'3306',
+        'USER':'root',
+        'PASSWORD':'lizhixuan123',
+        'HOST':'192.168.113.2',
+        'PORT':'3307',
 
     }
 }
@@ -137,3 +138,61 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static'),
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = False
+EMAIL_HOST = 'smtp.ym.163.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'lizhixuan@wolfcode.cn'
+EMAIL_HOST_PASSWORD = 'lizhixuan123'
+DEFAULT_FROM_EMAIL = 'lizhixuan@wolfcode.cn'
+
+ 
+HOSTNAME = "192.168.113.254"
+#USERNAME = "xmg"
+USERNAME = "admin"
+#PASSWORD = "xmg175207"
+PASSWORD = "kumanxuan@gzit"
+
+OFFICE_HOSTNAME = "192.168.113.254"
+OFFICE_USERNAME = "admin"
+OFFICE_PASSWORD = "kumanxuan@gzit"
+
+
+IEWAY_USERNAME = "775121173@qq.com"
+IEWAY_PASSWORD = "ce37dfe20f1fc794fbdea8ef22976b86"
+
+BACKUP_INFO_TO_EMAIL_USER = 'will@wolfcode.cn'
+#BACKUP_INFO_TO_EMAIL_USER = 'lizhixuan@wolfcode.cn'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+       'standard': {
+            'format': '%(asctime)s  [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'
+                    },
+                },
+              #日志格式 
+    'handlers': {
+        'file_logging': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+        },
+        'simple_logging':{
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter':'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_logging','simple_logging'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
