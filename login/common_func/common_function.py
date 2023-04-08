@@ -68,7 +68,7 @@ def is_used_port(port_numer):
 def is_set_est_info(x):
     import requests
     x1 = requests.post("http://%s:%s/grade/init"%(common_ip,x)).json()
-    print(x1)
+    raise ValueError(x1+"啊啊啊")
     if "teacherName" not in x1['data']:
         stop_estimate(x)
         return False
