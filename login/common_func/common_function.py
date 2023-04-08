@@ -67,8 +67,7 @@ def is_used_port(port_numer):
 #这个是用于判断这个已经启动的评价程序对应的端口是否已经设置评价信息
 def is_set_est_info(x):
     import requests
-    x1 = requests.post("http://%s:%s/grade/init" % (common_ip, x))
-    raise ValueError(x1.content.decode())
+    x1 = requests.post("http://%s:%s/grade/init" % (common_ip, x)).json()
     if "teacherName" not in x1['data']:
         stop_estimate(x)
         return False
