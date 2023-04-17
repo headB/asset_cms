@@ -24,6 +24,7 @@ class ClassRoom(models.Model):
     block_number = models.IntegerField()
     ip_addr = models.CharField(max_length=80)
     ACL = models.CharField(max_length=20)
+    interface_id = models.IntegerField()
 
 ##评价对象的分类
 class PortType(models.Model):

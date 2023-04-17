@@ -24,6 +24,10 @@ import json
 network_end_ip_list = ['0','64','32']
 network_mask_list = ['127','191','223']
 
+switchAddress = "http://192.168.121.10:86"
+MACUUid = "ae781adde98440deb7188e9d7c257a49"
+url = switchAddress + "/cgi-bin/luci/api/auth"
+getInfoUrl = switchAddress+"/cgi-bin/luci/api/cmd?auth="
 
 ##获取通用ip来用来获取设置选项..
 common_ip = False
@@ -32,7 +36,7 @@ common_ip = False
 def reflash_common_ip():
     from login.models import FrontEndShow
     common_ip_info = FrontEndShow.objects.all()
-    
+
     if not common_ip_info:
         raise ValueError("请先配置数据库中FrontEndShow里面的详细数据,如果为空请填入数据,例如学生访问的页面是192.168.113.1,你就填写ip为192.168.113.1,端口为80就可以了.!")
     else:
@@ -61,7 +65,7 @@ import login.models
 
 ##登陆成功的第一个页面
 def index(request):
-    
+
     from .models import FrontEndShow,Location
     # if not request.session.get('uid'):
     #     return redirect('/estimate/login/')
@@ -85,10 +89,10 @@ def index(request):
     info['locations'] = location_names
 
     return render(request,'estimate/estimate_index.html',info)
-        
+
 ##登录页面
 def login_index(request):
-    
+
     return render(request,'login/index.html')
 ##选择页面
 def choice_server(request):
@@ -108,7 +112,7 @@ def verify_code(request):
 ##验证登录的所有信息
 ##包括账号密码
 def check_login(request):
-    
+
     p_username = request.POST.get('username')
     p_passwd = request.POST.get('password')
     p_verify_code = request.POST.get('codeImage').lower()
@@ -121,12 +125,12 @@ def check_login(request):
     context['session_verify_code'] = verify_code
 
     #md5_passwd = hashlib.md5((p_passwd+"wolfcodeDTE").encode())
-    
+
     #加盐处理
     #context['md5_passwd'] = md5_passwd.hexdigest()
 
     user_info = login.models.Admin.objects.filter(username=p_username)
-    
+
     #验证过程
     if verify_code == p_verify_code:
         if user_info:
@@ -204,7 +208,7 @@ def ajax_handle(request):
             return JsonResponse({"valid":True})
 
     verify_code = request.GET['verify_code']
-    
+
     if verify_code.lower() == request.session['verifycode'].lower():
         return JsonResponse({"valid":True})
     else:
@@ -232,7 +236,7 @@ def ajax_estimate(request):
                 return HttpResponse()
         else:
             return HttpResponse()
-    
+
 
     type = request.GET.get("type")
     if type:
@@ -274,7 +278,7 @@ def estimate_process(request):
     typeDetail = is_number(request.POST.get('typeDetail'))
     #当时这个课室的总人数
     total = is_number(request.POST.get('total'))
-    
+
     #被评价人的名字
     user_name = request.POST.get('user_name')
     #评价的班级
@@ -285,7 +289,7 @@ def estimate_process(request):
     #评价种类
     ##根据评价种类,去获取需要启动什么端口,走!
     type = is_number(request.POST.get('type'))
-    
+
 
     ##全部输入的信息都不能缺少!!
     post_val = block and place and typeDetail and user_name and password and subject
@@ -346,11 +350,11 @@ def estimate_process(request):
     #重要-----#循环判断这个这个端口有没有被暂用
     #==================================================================+
 
-    
+
     #获取评价种类具体名称-关键-例如是java基础对应是java-jichu文件
     est_stay_by_info['type_name'] = port_type[0].rname if port_type[0].rname else sort_name
-   
-    
+
+
     #虽然拿到了初始化端口,但是,并不是表示可以直接使用!.还是需要对比当前有没有被占用.!
     #但是暂时不做细节!直接用来当启动.!
 
@@ -393,8 +397,8 @@ def estimate_process(request):
 
     #经过上面的准备,已经启动好了一个nodejs程序了,然后现在使用curl的模式去提交请求!
     #首先是先生成配置文件,然后执行start_estimate
-    
-    
+
+
     return JsonResponse({'content':infoStr,'prepare_info':str(est_stay_by_info)})
 
 ##正在评价的对象
@@ -415,7 +419,7 @@ def what_estimating(request):
     classRoomCollect = {}
     for x in classRoomInfo:
         classRoomCollect[x.id] = x.ip_addr
-    
+
     type = login.models.PortType.objects.all()
 
     detail_type = {}
@@ -426,7 +430,7 @@ def what_estimating(request):
     est_dict = {}
 
     #est_dict['class_info'] = classRoomCollect
-    
+
 
     est_dict['info'] = []
 
@@ -473,7 +477,7 @@ def what_estimating(request):
     #直接对比端口就好了.
     for x in run_est_info:
         os.system("kill %s"%run_est_info[x])
-    
+
     est_dict['title'] = "当前评价"
     est_dict['uname'] = request.session.get("uname")
 
@@ -482,7 +486,7 @@ def what_estimating(request):
         est_dict['show_address'] = str(front_end_info[0].ip)+":"+str(front_end_info[0].port)
     else:
         est_dict['show_address'] = False
-    
+
     return render(request,'estimate/estimate_manage.html',est_dict)
 
 ##历史评价
@@ -502,11 +506,11 @@ def export_data(request):
             detail = 2
         elif type_detail == "辅导员":
             detail = 3
-            
+
     else:
         est_dict['is_choice'] = False
         return render(request,'estimate/export.html',est_dict)
-    
+
     ##经过上面的简单判断之后,现在进入正式读取指定数据库文件去读取数据了,看看有没有sqlite的驱动先.
     from login.models import PortType
     detail_type = PortType.objects.filter(id=detail)
@@ -540,7 +544,7 @@ def export_data(request):
     if isset_accept(request):
         del(est_dict['class_info_1'])
         return  HttpResponse(json.dumps(est_dict))
-    
+
     return render(request,'estimate/export.html',est_dict)
 
 
@@ -548,12 +552,12 @@ def stop_estimate_by_url(request):
 
     from login.models import EstimateHistory
 
-   
+
     class_info_id = request.GET.get('class_info_id')
 
     est_info = EstimateHistory.objects.filter(class_info_id=class_info_id)
 
-    port = request.GET.get('port')  
+    port = request.GET.get('port')
     uid = est_info[0].who_id
 
     if est_info[0].who_id == uid and est_info[0].class_info_id == class_info_id:
@@ -621,25 +625,25 @@ def export_to_text(request):
         generate_config(start_info)
         start_estimate(detail_top_sort[0].port)
         time.sleep(0.8)
-    
+
     ##下面这个链接可以提供给在线查看人数!!
     ##如果通过get请求过来的数据没有时间,就默认只是查看实时的数据
 
     if not date:
         return_res = requests.get("http://%s:%s/grade/get?id=%s"%(common_ip,detail_top_sort[0].port,class_info_id))
         return HttpResponse(return_res)
-    
-    
-    
+
+
+
     return_res = requests.get("http://%s:%s/grade/download-%s?id=%s"%(common_ip,detail_top_sort[0].port,detail_sort,class_info_id))
-    
+
     from urllib.parse import quote
     the_file_name = quote(teacher_name+"-"+class_name+"-----"+date+".txt")
-   
+
     response = HttpResponse(return_res)
     response['Content-Type'] = 'application/octet-stream'
     response['Content-Disposition'] = 'attachment;filename="%s"'%(the_file_name)
-    
+
 
     return response
 
@@ -668,7 +672,7 @@ def admin_setting(request):
 
     res1 = False
     if block and ip_addr:
-        
+
         if location_resource.filter(tid=0,id=block):
             res1 = admin_setting.filter(id=amdin_id).update(location=block,ip=ip_addr)
             if res1:
@@ -684,13 +688,13 @@ def admin_setting(request):
                 run_node_info = get_running_node_dict()
 
                 ##添加功能.当这里成功设置好新的ip地址之后,就杀掉所有主的80XX这些端口,等待下一次重启.!
-            
+
                 for x in est_type_info:
                     if str(x.port) in  run_node_info:
                         os.system("kill -9 %s"%run_node_info[str(x.port)])
 
                 #return redirect("/estimate/admin_setting")
-        if not res1: 
+        if not res1:
             return render(request,'estimate/error.html',{'message':'无法设置成功,请联系网站管理员!','uname':request.session.get('uname')})
 
     #dict1 = {}
@@ -722,40 +726,9 @@ def network_manager(request):
     import zipfile
     import re
     from .models import ClassRoom,FrontEndShow,Location
-    from django.http import HttpResponse 
+    from django.http import HttpResponse
 
-    from  asset_cms.settings import HOSTNAME,PASSWORD,USERNAME
 
-    f = ftplib.FTP(HOSTNAME) #实例化
-    f.login(USERNAME,PASSWORD)
-
-    #获取当前路径
-    bufsize = 1024
-    fp = open("vrpcfg.zip",'wb')
-    f.retrbinary("RETR vrpcfg.zip",fp.write,bufsize)
-    fp.close()
-
-    zip_file_target = zipfile.ZipFile("vrpcfg.zip")
-    for x in zip_file_target.namelist():
-        zip_file_target.extract(x,"vrcfg.txt")
-    zip_file_target.close()
-    #打开文件
-    with open("vrcfg.txt/vrpcfg.cfg") as file1:
-        switcher_cfg = file1.readlines()
-    #然后是正则提取ACL规则
-    switcher_cfg = "".join(switcher_cfg)
-    acl_list = re.findall("acl number \d+[\s\S]*?rule.+\n(?! rule)",switcher_cfg)
-    #ACL_classification = []
-    ACL_classification_dict = {}
-    #按分类,保存好规则数据
-    for x in acl_list:
-        ACL_dict = {}
-        ACL_dict['name'] = re.findall("(?<=acl number )\d+",x)[0]
-        ACL_dict['rule'] = re.findall("rule.+(?=\n)",x)
-        ACL_dict['timer'] = "<span style='color:green'><b>YES</b></span>" if re.findall("time-range",x) else "<span style='color:red'><b>NO</b></span>"
-        ACL_dict['online'] = x
-        ACL_classification_dict.update({ACL_dict['name']:ACL_dict})
-    
     #首先知道当前的教学地点
     try:
         locations = FrontEndShow.objects.all()
@@ -767,23 +740,27 @@ def network_manager(request):
     for x in location:
         ids.append(x.id)
 
-    class_room_infos =  ClassRoom.objects.filter(block_number__in=ids)
+    class_room_infos =  ClassRoom.objects.filter(block_number__in=ids,interface_id__isnull=False)
 
     ## 尝试循环分类
     #合并两个数据，取合集
-    
+
+
+    #先获取交换机的token
+    token = getRuijieSwitchToken(switchAddress,url)
+    getInfoUrl2 = getInfoUrl + token
+    # 获取一份当前端口绑定ACL规则的列表
+    portBindStatusDict = getPortBindStatus(getInfoUrl2)
+
     for x in class_room_infos:
-        
+        if x.interface_id is not None and x.interface_id !="":
+            turn_online = portBindStatusDict.get(x.interface_id)
+            if turn_online is not None and turn_online!="none":
+                x.switch = "offline"
+            else:
+                x.switch = "online"
 
-        x.rules = ACL_classification_dict[str(x.ACL)]
-        x.state =  judge_network_state(ACL_classification_dict[str(x.ACL)]['online'],x.ip_addr)
-        turn_online = re.findall("通网",x.state)
-        if turn_online:
-            x.switch = "offline"
-        else:
-            x.switch = "online"
 
-    
     if isset_accept(request):
 
         json_data = []
@@ -795,19 +772,19 @@ def network_manager(request):
             operate = "deny" if (re.findall("通网",x.state)) else "permit"
             temp['operate_link'] = "?cls=%s&operate=%s&acl=520su1314"%(x.id,operate)
             json_data.append(temp)
-        
+
         return HttpResponse(json.dumps(json_data))
 
-        
 
-    
+
+
 
 
     return render(request,"estimate/network.html",{"acl_infos":class_room_infos})
 
 
 def judge_network_state(acls,network):
-    
+
     """
     :params :acls :传入字符串,并且里面的元素都是字符串类型,作用用于查看这个ACL的具体的规则
     :params :acls :afferent a list which only have string type data
@@ -843,7 +820,7 @@ def judge_network_state(acls,network):
     #然后又设置一段检测是否有安全设置的acl规则
     safe_rule = re.search("(?<=rule )\d+(?= deny ip destination 192\.168\.0.0 0.0\.255\.255)",acls)
 
-    
+
 
     #现在关键断不断网，就是看deny和permit是在学生的匹配网段前面还是后面，就知道是否通断网了。
     #先得出学生的规则是否连续，然后取其第一规则的序号
@@ -852,23 +829,23 @@ def judge_network_state(acls,network):
         return "请联系网站技术人员，错误04"
 
     #处理同时不存在优先级的情况判断,那就剩下
-    
+
     # def jusdge_non_permit_deny():
     #     if 
 
     #在这里设置障碍，如果都越过了这些障碍，就证明你是可以上网的。不然就是不完整了。
 
-    
-    
+
+
     break_deny_all = True
-    
+
     deny_all = "<span style='color:red'><b>断网</b></span>"
     permit_all = "<span style='color:green'><b>通网</b></span>"
     permit_local = "<span style='color:blue'><b>局部通网，有异常</b></span>"
     deny_local = "<span style='color:blue'><b>局部断网网,有异常</b></span>"
 
     #处理优先级
-    
+
     #对，处理代码，如果不代入一些事物代表象徵的话，是很难对比的
 
     def want_to_online(x):
@@ -885,7 +862,7 @@ def judge_network_state(acls,network):
             elif rule_stu_online:
                 if rule_stu_online[0] < global_deny:
                     state = True
-                    
+
         if rule_stu_offline:
             if x < rule_stu_offline[-1] and not global_deny:
                 state = True
@@ -897,7 +874,7 @@ def judge_network_state(acls,network):
         if not global_deny and not rule_stu_offline:
             state = True
             break_deny_stu = 0
-        
+
         return [state,break_deny_stu]
 
 
@@ -909,7 +886,7 @@ def judge_network_state(acls,network):
         if global_permit:
             if x > global_permit:
                 return False
-        
+
         if rule_stu_online:
             if x > rule_stu_online[0]:
                 return False
@@ -920,9 +897,9 @@ def judge_network_state(acls,network):
     #优先处理上网
 
     if global_permit:
-        
+
         x = want_to_online(global_permit)
-        if x[0]:      
+        if x[0]:
             if not x[1]:
                 return permit_all
             else:
@@ -934,15 +911,15 @@ def judge_network_state(acls,network):
             if not x[1]:
                 if rule_stu_online.__len__() == 3:
                     return permit_all
-        
+
             return permit_local
 
     if not global_deny:
         if not rule_stu_offline:
             return "<span style='color:blue'><b>全部凭账号上网</b></span>"
-        
+
     return deny_all
-    
+
 #自己尝试定义一个函数，免得每次自己都得手动去转换encode和decode，其实decode还可以，但是encode真的很烦啊。
 #不过想想，应该也是为了避免中文问题？
 
@@ -959,16 +936,16 @@ class Telnet2Huawei:
         USERNAME = (USERNAME+"\n").encode()
         PASSWORD = (PASSWORD+"\n").encode()
         self.chan = telnetlib.Telnet(host=HOSTNAME,port=23,timeout=5)
-        self.chan.read_until(b'Username:')  
+        self.chan.read_until(b'Username:')
         self.chan.write(USERNAME)
-        self.chan.read_until(b'Password:')  
+        self.chan.read_until(b'Password:')
         self.chan.write(PASSWORD)
         self.chan.write(b"sys\n")
 
     def send(self,command):
         command = command.encode()
         self.chan.write(command)
-    
+
     def recv(self,match_world):
         match_world = match_world.encode()
         return self.chan.read_until(match_world).decode()
@@ -989,18 +966,18 @@ def set_network(request):
     operate = request.GET.get("operate")
 
     operate_verify = re.findall("(permit|deny)",operate)
-    
+
     #如果参数不完整,直接跳回网络控制页面
     if not all([class_id,operate]) or not operate_verify:
         return redirect("/estimate/index/network")
-    
+
     #================
     #这个位置挺重要的,就是实例化一个 实例 去可以随便调用交换机命令
     #================
-    try:
-        chan = Telnet2Huawei()
-    except Exception as e:
-        return render(request,'estimate/fresh.html',{'world':"出现致命错误，交换机链接失败，请2分钟之后再尝试！或者联系技术人员！"})
+    # try:
+    #     chan = Telnet2Huawei()
+    # except Exception as e:
+    #     return render(request,'estimate/fresh.html',{'world':"出现致命错误，交换机链接失败，请2分钟之后再尝试！或者联系技术人员！"})
 
     #================
 
@@ -1009,151 +986,48 @@ def set_network(request):
         cls_infos = ClassRoom.objects.get(id=int(class_id))
     except Exception as e:
         return render(request,'estimate/fresh.html',{'world':"无法获取课室信息！或者联系技术人员！"})
-    
+
     ip_net = cls_infos.ip_addr
+    interface_id = cls_infos.interface_id
+    if interface_id==None or interface_id=="":
+        return render(request, 'estimate/fresh.html', {'world': "没有找到！或者联系技术人员！"})
 
-    chan.send("dis acl %s\n520su\n"%cls_infos.ACL)
-
-    res = chan.recv("]520su")
-    
-    #查看具体最高权限的rule序号
-
-    global_deny = re.findall("(?<=rule )\d+(?= deny ip \()",res)
-    global_permit = re.findall("(?<=rule )\d+(?= permit ip \()",res)
-    global_deny =  int(global_deny[0]) if global_deny else ''
-    global_permit =  int(global_permit[0]) if global_permit else ''
+    ## 尝试循环分类
+    # 合并两个数据，取合集
 
 
-    rule_stu_online = common_matching(cls_infos.ip_addr,res)
-    rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
-    rule_list = ['100','101','102']
-
-    permit_rules = ''
-    deny_rules = ''
-
-    chan.send("acl %s\n"%cls_infos.ACL)
-
-    for x in range(3):
-        #修复模式,假如是异常的话
-        #设置开启网络的规则
-        permit_rules += "rule %s permit ip source 192.168.%s.%s 0.0.0.%s\n"%(rule_list[x],ip_net,network_end_ip_list[x],network_mask_list[x])
-
-    
-    for x in range(3):
-        #修复模式,假如是异常的话
-        #设置开启网络的规则
-        deny_rules += "rule %s deny ip source 192.168.%s.%s 0.0.0.%s\n"%(rule_list[x],ip_net,network_end_ip_list[x],network_mask_list[x])
-
-    #============================
-    #这里设计一下,用于检测广州,用于跨交换机设置开断网
-    #============================
-
-    #检测post过来的课室id,看看是否需要多开一个实例去操作交换机
-
-    if (int(class_id) in (19,21,37)):
-        from asset_cms.settings import OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME
-
-    def office_switch_command(rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME):
-
-    # if (class_id in (19,21)):
-
-        #检测到需要跨交换机
-        
-        import time
-        office_switch = Telnet2Huawei(HOSTNAME=OFFICE_HOSTNAME,PASSWORD=OFFICE_PASSWORD,USERNAME=OFFICE_USERNAME)
-        office_switch.send(rules)
-        
-        time.sleep(1.5)
-        
-        
-
-    
-#根据开启还是关闭网络来操作
-    if operate == "permit":
-
-        #去除所有断网的语句
-        if global_deny:
-            chan.send("undo rule %s\n"%global_deny)
-        
-        for x in rule_stu_offline:
-            chan.send("undo rule %s\n"%x)
-
-        for x in rule_stu_online:
-            chan.send("undo rule %s\n"%x)
-        
+    # 先获取交换机的token
+    token = getRuijieSwitchToken(switchAddress, url)
+    getInfoUrl2 = getInfoUrl + token
 
 
-        chan.send(permit_rules)
-
-        #检测是否需要跨交换机
-        if (int(class_id) in (19,21,37)):
-            
-            cls_infos.ACL
-            permit_rules = "ACL " + cls_infos.ACL + "\n" + permit_rules
-            office_switch_command(permit_rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME)
 
 
-            
-
-    else:
-       #去除所有开网的语句
-        if global_permit:
-            chan.send("undo rule %s\n"%global_permit)
-        
-        for x in rule_stu_offline:
-            chan.send("undo rule %s\n"%x)
-
-        for x in rule_stu_online:
-            chan.send("undo rule %s\n"%x)  
-        
-        chan.send(deny_rules)
-        
-        #检测是否需要跨交换机
-        if (int(class_id) in (19,21,37)):
-            
-            deny_rules = "ACL " + cls_infos.ACL + "\n" + deny_rules
-            office_switch_command(deny_rules,OFFICE_HOSTNAME,OFFICE_PASSWORD,OFFICE_USERNAME)
-            
-            
-
-        
-
-    chan.send("520su\n")
-    #在这截留以上所有的操作，并且打印，查看过程！
-    res = chan.recv("]520su")
-    
-    chan.send("dis acl %s\n520su\n"%cls_infos.ACL)
-    
-    res = chan.recv("]520su")
-    
-    chan.send("q\nq\nsave\ny\n")
-    time.sleep(1.5)
-    chan.chan.close()
-    rule_stu_online = common_matching(cls_infos.ip_addr,res)
-    rule_stu_offline = common_matching(cls_infos.ip_addr,res,operate="deny")
 
     if operate == "permit":
         operate_name = "开网"
+        portBindACL(getInfoUrl2,interface_id,MACUUid)
     else:
+        portUnbindACL(getInfoUrl2,interface_id)
         operate_name = "断网"
 
     success_world = "信息反饋:%s的%s设置成功,如想再次确认,5秒钟之后自动返回刷新"%(cls_infos.class_number,operate_name)
     fail_world = "信息反饋:%s的网络设置可能失败了,但系可以5秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
 
-    if operate == "permit" and rule_stu_online:
-        return render(request,'estimate/fresh.html',{'world':success_world})
-    
-    elif operate == "deny" and rule_stu_offline:
-        return render(request,'estimate/fresh.html',{'world':success_world})
-    
-    return render(request,'estimate/fresh.html',{'world':fail_world})
+    # if operate == "permit" and rule_stu_online:
+    #     return render(request,'estimate/fresh.html',{'world':success_world})
+    #
+    # elif operate == "deny" and rule_stu_offline:
+    #     return render(request,'estimate/fresh.html',{'world':success_world})
+
+    return render(request,'estimate/fresh.html',{'world':success_world})
 
 
     #用公用函数获取需要设置的具体分别设置第几条rule规则
 
     #实在没有办法的话,就统一设置100以后的规则
-    
+
 
 
 def common_matching(net,acls,operate="permit"):
@@ -1174,10 +1048,10 @@ def common_matching(net,acls,operate="permit"):
             rules.append(int(rule[0])) if rule else ''
         except Exception as e:
             raise ValueError("规则转换出现问题！,请联系网站管理人员")
-        
-    
+
+
     return rules
-    
+
 def list_element_to_int(list):
     """
     :paras :list :传入一组数组，然后要求就是里面的元素都是字符串数据类型的数字
@@ -1261,7 +1135,7 @@ def reset_encrypt(request):
     user_id_session = request.session.get("uid")
     user_info = Admin.objects.get(id=user_id_session)
     token = token_object.cookie_value
-    
+
     applicant = user_info.realname
 
     try:
@@ -1272,7 +1146,7 @@ def reset_encrypt(request):
     if res.status_code == 200:
         content = json.loads(res.content.decode())
         if content['errcode'] == 0:
-            
+
             return render(request,'estimate/reset_video_code.html',{'content':content['result']['list'],'applicant':applicant})
 
 
@@ -1293,19 +1167,19 @@ def reset_encrypt(request):
         res = search(key)
     except Exception as e:
         return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误04",'forward':'/estimate/index/'})
-    
+
     if res.status_code == 200:
         content = json.loads(res.content.decode())
-        
+
         if content['errcode'] == 0:
-            
+
             return render(request,'estimate/reset_video_code.html',{'applicant':applicant,'content':content['result']['list']})
     else:
         return render(request,'estimate/fresh.html',{'world':"第二次尝试登陆失败！出现网络超时,5秒后自动返回，错误05",'forward':'/estimate/index/'})
-        
+
     return render(request,'estimate/fresh.html',{'world':"请再尝试一下重新登陆,5秒后自动返回，错误06",'forward':'/estimate/index/'})
 
-#设置一个尝试去重新登陆ieway的函数  
+#设置一个尝试去重新登陆ieway的函数
 def try_login_ieway():
     import requests
     import json
@@ -1317,7 +1191,7 @@ def try_login_ieway():
     }
         #登陆验证 #post方法
         #返回的信息有token，有所有课程的信息
-     
+
         #需要的参数
         #1.evtoken
         #2.token
@@ -1326,14 +1200,14 @@ def try_login_ieway():
     login_url = "http://cer.ieway.cn/api/v1/user/cloginChecked"
     datas = {"user_name":IEWAY_USERNAME,"user_pwd":IEWAY_PASSWORD,"deviceType":"false"}
     datas = json.dumps(datas)
-    
+
     resContent = requests.post(login_url,data=datas,headers=request_head_dict)
     res = json.loads(resContent.content.decode())
     token = res['result']['token']
     token_object = IewayCookie.objects.get(id=1)
     token_object.cookie_value = token
     token_object.save()
-    
+
     return res
 
 
@@ -1371,7 +1245,7 @@ def try_to_create(username,id,course_id_string_type):
     "Content-Type":"application/json;charset=UTF-8",
     "cookie":token,
     }
-    
+
     #创建激活码地址 POST方法
     #参数，json格式
     create_code_url = "http://cer.ieway.cn/api/v1/user/mng/certificate/insert"
@@ -1380,12 +1254,12 @@ def try_to_create(username,id,course_id_string_type):
 
     parameter_dict = {"identify":username,"user_id":id,"course_id":["%s"%course_id_string_type],"end_time":endtime,"total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
     datas = json.dumps(parameter_dict)
-    
+
     # {"identify":"黎智煊-测试-重置系统","user_id":"9527","course_id":["2999"],"end_time":"2021-09-07 17:36:16","total_times":99999,"identify_show":1,"pre_authority":0,"online_down":0,"play_type":0,"is_online":0}
     try:
-        
+
         res = requests.post(create_code_url,data=datas,headers=request_head_dict)
-        
+
     except Exception as e:
         return False
 
@@ -1395,7 +1269,7 @@ def try_to_create(username,id,course_id_string_type):
     #设置成功之后，发送邮件，到三个人的邮箱里面
 
 def try_to_destory(user_id,activate_code):
-    
+
     request_head_dict = {
     "Accept": "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate",
@@ -1419,7 +1293,7 @@ def try_to_destory(user_id,activate_code):
     return res
 
 
-    
+
 class SendResetVideoCode(View):
 
     def get(self,request):
@@ -1434,13 +1308,13 @@ class SendResetVideoCode(View):
             return render(request, 'estimate/fresh.html',
                           {'world': "现在只有管理员才能操作重置，请建议学员用公众号的<学员认证>完成实名认证后点击《视频激活码》进行微信支付重置", 'forward': '/estimate/index/'})
 
- 
+
         active_code = request.GET.get("nizhidaowojiangmiesuanniying")
 
         #如果成功获取到激活码，首先尝试解密
         if active_code:
 
-            
+
 
 
             #进行解密
@@ -1455,12 +1329,12 @@ class SendResetVideoCode(View):
                 if code['confirm'] != "Canton_foshan_strict":
                     return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误01",'forward':'/estimate/index/'})
             except Exception as e:
-                
+
                 return render(request,'estimate/fresh.html',{'world':"重置失败，考虑一下是不是超过3分钟了，稳程序猿吧，毕竟是他们开发的，错误02",'forward':'/estimate/index/','timer':'6000'})
-        
+
             #首先尝试解析出本次应该重置的学生的信息先。
             try:
-        
+
                 username = code['username']
                 id = code['id']
                 course_name = code['course_name']
@@ -1473,12 +1347,12 @@ class SendResetVideoCode(View):
                 code = code1
 
             except Exception as e:
-                    
+
                 return render(request,'estimate/fresh.html',{'world':"重置失败，稳程序猿吧，毕竟是他们开发的，错误03",'forward':'/estimate/index/'})
-            
+
             #然后就是不可描述的requests请求了。不不。还有一个发送功能。不过这个不难。！不过还是得接收学生的名字，学科，学科id，身份证啊。
             #对了啦。就是把这些信息封装到json里面就可以的啦。！！
-            
+
 
             #OK!关键到这里了,到了这一步,就可以防止班主任手贱,以为是网络出问题,然后多点几次的行为
 
@@ -1490,15 +1364,15 @@ class SendResetVideoCode(View):
                 reset_request_query = Admin.objects.get(reset_videocode_request=code1)
             except Exception as e:
                 return render(request,'estimate/fresh.html',{'world':"在数据库中找不到你的申请,或者,你的视频重置请求已经完成,请查看邮箱是否存在已经完成的结果",'forward':'/estimate/index/','timer':'15000'})
-                
+
 
 
             #先创建，后召回激活码
-            
+
             try:
                 res = try_to_create(username,id,str(course_id))
                 response = json.loads(res.content.decode())
-            
+
             #然后尝试保存新的激活码
                 active_code = response['result']['l']
             except Exception as e:
@@ -1513,8 +1387,8 @@ class SendResetVideoCode(View):
 
             #成功获取了激活码之后，就可以准备去毁灭，召回激活码了，恩恩，看完如何毁灭先.
 
-            
-            
+
+
             #书写代码
             from django.core.mail import send_mail
 
@@ -1530,13 +1404,13 @@ class SendResetVideoCode(View):
 
             #直接是传递激活码和ID get方法
             # {"id":64792,"code":"16190-3480-42E6-C894-1D55"}
-            
+
             #尝试去召回激活码
-            try:   
+            try:
                 re = try_to_destory(uid,code)
 
                 re1 = json.loads(re.content.decode())
-                
+
                 if re1['errcode'] != 0:
                     email_content += "<br><center><h3>新的激活码已经生成,但是,召回%s的激活码失败</h3></center>"%username
 
@@ -1556,16 +1430,16 @@ class SendResetVideoCode(View):
 
             reset_request_query.reset_videocode_request = None
             reset_request_query.save()
-            
+
             send_mail('激活码_%s_申请重置%s,同学_%s的视频激活码'%(applicant,course_name,username),'','lizhixuan@wolfcode.cn',[EMAIL_HOST_USER,BACKUP_INFO_TO_EMAIL_USER,email_admin],html_message=email_content)
             return render(request,'estimate/fresh.html',{"world":"重置操作完成,激活码已经发送到你的邮箱,是否存在异常请查看邮件说明","forward":"/estimate/index/"})
-            
+
             #获取学生的信息
 
 
 
         #实际操作过程告诉我们，还是不能把一大堆的代码写一起啊，看到头晕了。！
-        
+
         #现在暂时只能通过简单的else来区分了，想想一个问题就是，如果不是用VSC的话，visual studio Code的ide来编程的话，
         #不得不说，难度还是想当的大的啊》～
 
@@ -1574,7 +1448,7 @@ class SendResetVideoCode(View):
                 #名字
                 #身份证
                 #课程名称
-            try:           
+            try:
                 username = request.GET['username']
                 id = request.GET['id']
                 course_id = request.GET['course_id']
@@ -1590,7 +1464,7 @@ class SendResetVideoCode(View):
             #尝试获取重置授权码，如果存在，并且是匹配的话，就返回激活码信息，这里的激活码可以不用保存到数据库，因为里面就自带有时效了。
             #OK！现在引入新的激活码验证码机制
             #不过这里有时间的话，还是建议加以限制一下。！
-            
+
             #加密随机码 有时效性的
             #15分钟内有效
 
@@ -1618,7 +1492,7 @@ class SendResetVideoCode(View):
             #发送邮件
             from django.core.mail import send_mail
 
-            
+
 
             #待发送的文本
             html_message = "<center><p>点击正式申请重置，这个过程会将该学生的原有的激活码,并且重新申请一下视频激活码，每一个激活码都需要一定的费用，请查看学生是否真的有需要</p><p>另外一点，一旦获得新的视频激活码，将自动发送一份邮箱告知任小龙老师，以作备份</p></center>"
@@ -1641,12 +1515,12 @@ class SendResetVideoCode(View):
             request_object = Admin.objects.get(id=uid_admin)
             request_object.reset_videocode_request = code
             request_object.save()
-            
+
             #设置一定的验证机制
 
 
             return render(request,'estimate/fresh.html',{'world':'重置视频激活码申请,发送你的邮箱成功，请查查看你的邮箱，10秒后自动返回首页!','forward':'/estimate/index/','timer':'10000'})
-            
+
 
 
 #除了这个特殊的接口之外，其他其实不用设置什么特别的了。
@@ -1662,13 +1536,13 @@ def decode_code(str1):
     time2 = time1 + datetime.timedelta(minutes=1)
     times1 = time1.strftime("%Y-%M+%d=%H:%M:00")
     times2 = time2.strftime("%Y-%M+%d=%H:%M:00")
-    
+
     #
     times1 = hashlib.md5((SECRET_KEY+times1).encode()).hexdigest()
     times2 = hashlib.md5((SECRET_KEY+times2).encode()).hexdigest()
-    
+
     if times1 == str1 or  times2 == str1:
-        
+
         return True
     else:
         return False
@@ -1698,7 +1572,7 @@ class weixin_checkin(View):
         #首先是获取微信的openid，这个是毫无疑问的
 
 
-        
+
 
 
         try:
@@ -1706,10 +1580,10 @@ class weixin_checkin(View):
 
             token_info = token_decode(communication_code,21600)
             weixin_openid = token_info['open_id']
-            
+
 
         except Exception as e:
-        
+
             return HttpResponse("<h1>请提交有效的openid信息</h1>")
 
          #然后尝试可以去解密通讯密钥，看看是否想等。
@@ -1717,7 +1591,7 @@ class weixin_checkin(View):
         # if not  decode_code(communication_code):
         #     return HttpResponse("<h1>请重新在公众号输入：评分系统，以获取最新的登陆口令</h1>")
 
-        
+
 
 
         #然后去数据库对比，如果没有获取到，匹配到username的话，就通知用户，请绑定公司邮箱进行实名认证
@@ -1771,7 +1645,7 @@ class send_weixin_mail(View):
 
         #然后，现在就进行数据库操作了。！没有错，就是跨数据库工作，虽然也是estimate数据库。
 
-        
+
 
         return HttpResponse("xx")
 
@@ -1780,7 +1654,7 @@ class quick_verify(View):
 
     def get(self,request):
 
-        
+
         return render(request,"estimate/quick_verify.html",{})
 
     def post(self,reuqst):
@@ -1798,7 +1672,7 @@ def isset_accept(request_object):
 
     x1 = re.findall(('(json|xml)'),request_object.META.get('HTTP_ACCEPT'))
     x2 = re.findall(('html'),request_object.META.get('HTTP_ACCEPT'))
-    
+
     return  x1 and not x2
 
 
@@ -1827,9 +1701,150 @@ class forward_to_credit(View):
 
         encypt_word = decode_tool.dumps(user_info_json)
 
-        
+
 
         return_url = "http://credit.wolfcode.cn/api/v1_0/teachers/login/?uid=%s"%encypt_word.decode()
 
 
         return redirect(return_url)
+
+
+def getRuijieSwitchToken(switchAddress,url):
+
+    # post请求 请求体是application/json
+
+    request_data = {
+        "method": "login",
+        "params": {
+            "encry": "true",
+            "limit": "false",
+            "password": "U2FsdGVkX1+dFl7DDJG/hqi5+6jVIu0qlL+s1FOFgxQ=",
+            "time": "1681397099",
+            "username": "admin"
+        }
+    }
+
+    applyAclRule = switchAddress + "/cgi-bin/luci/api/cmd?auth=";
+    #                             /cgi-bin/luci/api/cmd
+    # https://192.168.10.21/cgi-bin/luci/api/cmd?auth=e9b0e1cc3a1359d87c8bfaefcc6863d6
+    print(int(time.time()))
+    # 字符串转json json.dumps
+    print(json.dumps(request_data))
+
+    res = requests.post(url=url, data=json.dumps(request_data))
+    if res is not None and res.status_code == 200:
+        print(res.content)
+        # 得到认证后的token,用于后面所有的授权操作
+        token = ""
+        try:
+            token = json.loads(res.content).get("data").get("sid")
+            applyAclRule += token
+            print(applyAclRule)
+            return token
+        except Exception as e:
+            print("没有办法获取token")
+            raise ValueError("没有办法获取token")
+            # 然后尝试应用或者取消对应端口的ACL规则
+
+    return False
+
+
+## # 获取各个端口的绑定状态,用于展示课室目前的网络通断情况
+# 设置参数
+def getPortBindStatus(url):
+    requestPortBindStatus = {
+        "method": "cmdArr",
+        "params": {
+            "device": "pc",
+            "noParse": True,
+            "params": [
+                {
+                    "method": "devSta.get",
+                    "params": {
+                        "async": "null",
+                        "module": "acl",
+                        "noParse": True,
+                        "remoteIp": False
+                    }
+                },
+                {
+                    "method": "devSta.get",
+                    "params": {
+                        "async": "null",
+                        "module": "acl_bind",
+                        "noParse": True,
+                        "remoteIp": False
+                    }
+                }
+            ]
+        }
+    };
+
+    portBindStatusReq = requests.post(url=url, data=json.dumps(requestPortBindStatus))
+    print(portBindStatusReq)
+    portBindStatusList = json.loads(portBindStatusReq.content).get("data")[1].get("list")
+    portBindStatusDict = {}
+    for portInfo in portBindStatusList:
+        portBindStatusDict[portInfo.get("portid")] = portInfo.get("mac_uuid")
+
+    return portBindStatusDict
+
+
+#然后将参数塞到post请求,将ACL规则应用到某一个端口上面
+def portBindACL(applyAclRule,interfaceId,MACUUid):
+
+    applyAclPost = {
+        "method": "devConfig.add",
+        "params": {
+            "async": "null",
+            "data": {
+                "aggregate_port": -1,
+                "editState": True,
+                "ifname": "",
+                "interface": "",
+                "intfName": "",
+                "ip_uuid": "none",
+                "link": 1,
+                "lpid": "null",
+                "mac_uuid": MACUUid,
+                "media_flag": 0,
+                "media_type": 1,
+                "portid": [
+                    interfaceId
+                ]
+            },
+            "device": "pc",
+            "module": "acl_bind_sw",
+            "noParse": True,
+            "remoteIp": False
+        }
+    };
+
+    # 然后将参数塞到post请求,将ACL规则应用到某一个端口上面
+    postRes = requests.post(url=applyAclRule, data=json.dumps(applyAclPost))
+    if postRes is not None and postRes.status_code == 200:
+        print(postRes.content)
+
+#解除端口绑定ACL规则
+#准备好参数
+def portUnbindACL(applyAclRule, interfaceId):
+    unApplyAclPost = {
+        "method": "devConfig.del",
+        "params": {
+            "async": "null",
+            "data": {
+                "portid": [
+                    interfaceId
+                ]
+            },
+            "device": "pc",
+            "module": "acl_bind_sw",
+            "noParse": True,
+            "remoteIp": False
+        }
+    };
+
+    # 然后将参数塞到post请求,将ACL规则取消应用到某一个端口上面
+    postRes = requests.post(url=applyAclRule, data=json.dumps(unApplyAclPost))
+    if postRes is not None and postRes.status_code == 200:
+        print(postRes.content)

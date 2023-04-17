@@ -21,9 +21,9 @@
         <td style="text-align:center">{{ x.class_number }}</td>
         <td style="text-align:center">
             {% if x.switch == 'offline' %}
-            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=deny&acl=520su1314" ><button id="" class="btn btn-danger">點擊斷網</button>
+            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=deny&acl=520su1314" ><button id="" class="btn btn-success">点击开网</button>
             {% else %}
-            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=permit&acl=520su1314" ><button id="" class="btn btn-success">點擊開網</button>
+            <a href="/estimate/index/set_network/?cls={{ x.id }}&operate=permit&acl=520su1314" ><button id="" class="btn btn-danger">点击断网</button>
             {% endif %}
         </a></td>
         <td style="text-align:center">{{ x.state|safe }}</td>
@@ -38,7 +38,7 @@
             $(".btn").click(function(){
                 $("tbody").hide()
                 $("div+h3").html("")
-                $("div+h3").after("<h2 id='c1'>咪郁,唔好乱点,处理紧～等下..<h2><h3 id='c2'>请稍等，不要乱点，处理中..</h3>")
+                $("div+h3").after("<h2 id='c1'>稍等,不要乱点,处理紧～等下..<h2><h3 id='c2'>请稍等，不要乱点，处理中..</h3>")
                 i = 1
                 var time1 = setInterval(function(){$("#c1").append(".");$("#c2").append(".");i++;
                 if (i == 13){window.clearInterval(time1);
