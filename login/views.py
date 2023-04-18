@@ -24,10 +24,10 @@ import json
 network_end_ip_list = ['0','64','32']
 network_mask_list = ['127','191','223']
 
-switchAddress = "http://192.168.121.10:86"
-MACUUid = "ae781adde98440deb7188e9d7c257a49"
-url = switchAddress + "/cgi-bin/luci/api/auth"
-getInfoUrl = switchAddress+"/cgi-bin/luci/api/cmd?auth="
+switchAddress = ""
+MACUUid = ""
+url = ""
+getInfoUrl = ""
 
 ##获取通用ip来用来获取设置选项..
 common_ip = False
@@ -43,6 +43,14 @@ def reflash_common_ip():
         common_ip1 = str(common_ip_info[0].ip)
         global common_ip
         common_ip = common_ip1
+        global switchAddress
+        switchAddress = "http://"+common_ip_info[0].switch_addr
+        global MACUUid
+        MACUUid = common_ip_info[0].acl_uuid
+        global url
+        url = switchAddress + "/cgi-bin/luci/api/auth"
+        global getInfoUrl
+        getInfoUrl = switchAddress + "/cgi-bin/luci/api/cmd?auth="
 
 
 
@@ -1012,8 +1020,8 @@ def set_network(request):
         portUnbindACL(getInfoUrl2,interface_id)
         operate_name = "断网"
 
-    success_world = "信息反饋:%s的%s设置成功,如想再次确认,5秒钟之后自动返回刷新"%(cls_infos.class_number,operate_name)
-    fail_world = "信息反饋:%s的网络设置可能失败了,但系可以5秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
+    success_world = "信息反饋:%s的%s设置成功,如想再次确认,2秒钟之后自动返回刷新"%(cls_infos.class_number,operate_name)
+    fail_world = "信息反饋:%s的网络设置可能失败了,但系可以2秒钟之后查看你的课室是否设置成功"%cls_infos.class_number
 
     # if operate == "permit" and rule_stu_online:
     #     return render(request,'estimate/fresh.html',{'world':success_world})

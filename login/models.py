@@ -70,6 +70,8 @@ class FrontEndShow(models.Model):
     ip = models.GenericIPAddressField()
     port = models.IntegerField()
     location = models.ForeignKey(Location,on_delete=models.PROTECT,default=1)
+    switch_addr = models.CharField(max_length=255)
+    acl_uuid = models.CharField(max_length=255)
 
 #cookie的保存
 class IewayCookie(models.Model):
