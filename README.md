@@ -46,6 +46,14 @@ asset_cms powered by python3.6_django
 #### 6.可以的话,请记得去删除TM2015项目里面关于提交评价之后出现的二维码.
 #### 暂时没有其他了.!?!
 
+# 导入数据库步骤
+````
+docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=lizhixuan123 -e TZ=Asia/Shanghai -d mysql:5.6
+然后用navicat连接并且创建estimate数据库,然后导入 estimate.sql
+````
+
+
+
 最下面
 最下面这句话
 最下面??
