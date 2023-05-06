@@ -13,6 +13,7 @@ from asset_cms.settings import IEWAY_USERNAME,IEWAY_PASSWORD,EMAIL_HOST_USER,BAC
 import requests
 import json
 import datetime
+import subprocess
 
 #添加对不同的客户端返回的response的body支持,例如支持json,xml,等等.
 from django.core import serializers
@@ -677,6 +678,16 @@ def admin_setting(request):
     ip_addr = request.POST.get('ip_addr')
 
     dict1 = {}
+    ret_all = ""
+    #一旦点击这里,就尝试更新代码
+    try:
+        ret1 = subprocess.getoutput("cd /home/python/asset_cms && git pull origin wolfcode")
+        ret2 = subprocess.getoutput("cd /home/python/estimate/XMG-estimate/TM2015 && git pull")
+        ret_all = ret1+ret2
+        print(ret_all)
+    except Exception as e:
+        print(e)
+
 
     res1 = False
     if block and ip_addr:
@@ -710,6 +721,7 @@ def admin_setting(request):
     dict1['location_info'] = location_info
     dict1['admin_setting'] = admin_setting
     dict1['uname'] = request.session.get('uname')
+    dict1['updateRes'] = ret_all
 
     return render(request,'estimate/admin_setting.html',dict1)
 
