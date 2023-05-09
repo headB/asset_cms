@@ -682,7 +682,7 @@ def admin_setting(request):
     #一旦点击这里,就尝试更新代码
     try:
         ret1 = subprocess.getoutput("cd /home/python/asset_cms && git pull origin wolfcode")
-        ret2 = subprocess.getoutput("cd /home/python/estimate/XMG-estimate/TM2015 && git pull")
+        ret2 = subprocess.getoutput("cd /home/python/estimate/XMG-estimate/TM2015 && git pull origin main")
         ret_all = ret1+ret2
         print(ret_all)
     except Exception as e:
